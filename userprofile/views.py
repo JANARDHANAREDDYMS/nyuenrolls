@@ -39,3 +39,9 @@ def register_request(request):
 
     context ={'form': form}
     return render(request,'register.html',context)
+
+def dashboard(request):
+    return render(request, "userprofile/dashboard.html")
+
+def scheduler(request):
+    return render(request, "userprofile/scheduler.html")
