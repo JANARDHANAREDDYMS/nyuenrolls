@@ -75,36 +75,103 @@
 				</div>
 				<div class="d-flex justify-content-center form_container">
 
-					<form method="POST" action="">
-                        {%csrf_token%}
+					<form method="POST" action="{% url 'register' %}">
+						{% csrf_token %}
+						
+						<!-- Username -->
 						<div class="input-group mb-3">
 							<div class="input-group-append">
 								<span class="input-group-text"><i class="fas fa-user"></i></span>
 							</div>
-							{{form.username}}
+							<label for="{{ form.username.id_for_label }}">Username</label>
+							{{ form.username}}
+							{{ form.username.errors }}
 						</div>
+						
+						<!-- Email -->
 						<div class="input-group mb-2">
 							<div class="input-group-append">
 								<span class="input-group-text"><i class="fas fa-envelope-square"></i></span>
 							</div>
-							{{form.email}}
+							<label for="{{ form.email.id_for_label }}">Email</label>
+							{{ form.email}}
+							{{ form.email.errors }}
 						</div>
+						
+						<!-- Password -->
 						<div class="input-group mb-2">
 							<div class="input-group-append">
 								<span class="input-group-text"><i class="fas fa-key"></i></span>
 							</div>
-							{{form.password1}}
+							<label for="{{ form.password.id_for_label }}">Password</label>
+							{{ form.password }}
+							{{ form.password.errors }}
 						</div>
+						
+						<!-- Confirm Password -->
 						<div class="input-group mb-2">
 							<div class="input-group-append">
 								<span class="input-group-text"><i class="fas fa-key"></i></span>
 							</div>
-							{{form.password2}}
+							<label for="{{ form.password_confirm.id_for_label }}">Confirm Password</label>
+							{{ form.password_confirm}}
+							{{ form.password_confirm.errors }}
 						</div>
-
-				   		<div class="d-flex justify-content-center mt-3 login_container">
-				 			<input class="btn login_btn" type="submit" value="Register Account">
-				   		</div>
+						
+						<!-- N_id -->
+						<div class="input-group mb-2">
+							<div class="input-group-append">
+								<span class="input-group-text"><i class="fas fa-id-card"></i></span>
+							</div>
+							<label for="{{ form.N_id.id_for_label }}">Student ID (N_id)</label>
+							{{ form.N_id }}
+							{{ form.N_id.errors }}
+						</div>
+						
+						<!-- Name -->
+						<div class="input-group mb-2">
+							<div class="input-group-append">
+								<span class="input-group-text"><i class="fas fa-user"></i></span>
+							</div>
+							<label for="{{ form.Name.id_for_label }}">Name</label>
+							{{ form.Name }}
+							{{ form.Name.errors }}
+						</div>
+						
+						<!-- Education Level -->
+						<div class="input-group mb-2">
+							<div class="input-group-append">
+								<span class="input-group-text"><i class="fas fa-graduation-cap"></i></span>
+							</div>
+							<label for="{{ form.Education_Level.id_for_label }}">Education Level</label>
+							{{ form.Education_Level}}
+							{{ form.Education_Level.errors }}
+						</div>
+						
+						<!-- Phone Number -->
+						<div class="input-group mb-2">
+							<div class="input-group-append">
+								<span class="input-group-text"><i class="fas fa-phone"></i></span>
+							</div>
+							<label for="{{ form.Phone_no.id_for_label }}">Phone Number</label>
+							{{ form.Phone_no }}
+							{{ form.Phone_no.errors }}
+						</div>
+						
+						<!-- School -->
+						<div class="input-group mb-2">
+							<div class="input-group-append">
+								<span class="input-group-text"><i class="fas fa-university"></i></span>
+							</div>
+							<label for="{{ form.School.id_for_label }}">School</label>
+							{{ form.School}}
+							{{ form.School.errors }}
+						</div>
+					
+						<!-- Submit Button -->
+						<div class="d-flex justify-content-center mt-3 login_container">
+							<input class="btn login_btn" type="submit" value="Register Account">
+						</div>
 					</form>
 				</div>
                 {{form.errors}}

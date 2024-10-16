@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class StudentInfo(models.Model):
     Edu_levels = [("Undergraduate", "Undergraduate"),
@@ -10,6 +11,7 @@ class StudentInfo(models.Model):
                ("Gallatin", "Gallatin")]
     
     N_id = models.CharField(max_length=8, primary_key=True)
+    user_id = models.OneToOneField(User, on_delete=models.CASCADE)
     Name = models.CharField(max_length=100)
     email = models.EmailField(max_length=100)
     Education_Level = models.CharField(max_length=50, choices=Edu_levels)
