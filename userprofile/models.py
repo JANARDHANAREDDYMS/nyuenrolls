@@ -11,7 +11,7 @@ class StudentInfo(models.Model):
                ("Gallatin", "Gallatin")]
     
     N_id = models.CharField(max_length=8, primary_key=True)
-    user_id = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     Name = models.CharField(max_length=100)
     email = models.EmailField(max_length=100)
     Education_Level = models.CharField(max_length=50, choices=Edu_levels)
@@ -19,7 +19,7 @@ class StudentInfo(models.Model):
     School = models.CharField(max_length=50, choices=Schools)
     ta_course = models.ForeignKey('CourseInfo', null=True, blank=True, related_name='tas', on_delete=models.SET_NULL)
     is_ta = models.BooleanField(default=False)
-    course_enrolled = models.ManyToManyField('CourseInfo', related_name='enrolled_students')
+    # course_enrolled = models.ManyToManyField('CourseInfo', related_name='enrolled_students')
 
 class CourseInfo(models.Model):
     course_id = models.CharField(max_length=11, primary_key=True)
