@@ -21,6 +21,27 @@
                 </ul>
             </div>
         </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Courses Enrolled</h5>
+                {% if student_info.course_enrolled.all %}
+                    <ul class="list-group list-group-flush">
+                        {% for course in student_info.course_enrolled.all %}
+                            <li class="list-group-item">
+                                <strong>Course Name:</strong> {{ course.name }} <br>
+                                <strong>Instructor:</strong> {{ course.Instructor.Name }} <br>
+                                <strong>Class Time:</strong> {{ course.class_time }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No courses enrolled.</p>
+                {% endif %}
+            </div>
+        </div>
+
+
         
         <div class="text-center mt-4">
             <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>

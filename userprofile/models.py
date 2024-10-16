@@ -19,7 +19,7 @@ class StudentInfo(models.Model):
     School = models.CharField(max_length=50, choices=Schools)
     ta_course = models.ForeignKey('CourseInfo', null=True, blank=True, related_name='tas', on_delete=models.SET_NULL)
     is_ta = models.BooleanField(default=False)
-    # course_enrolled = models.ManyToManyField('CourseInfo', related_name='enrolled_students')
+    course_enrolled = models.ManyToManyField('CourseInfo', related_name='enrolled_students',default="1")
 
 class CourseInfo(models.Model):
     course_id = models.CharField(max_length=11, primary_key=True)
