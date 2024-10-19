@@ -20,6 +20,7 @@ class StudentInfo(models.Model):
     School = models.CharField(max_length=50, choices=Schools)
     ta_course = models.ForeignKey('CourseInfo',null=True, blank=True, related_name='tas', on_delete=models.SET_NULL)
     is_ta = models.BooleanField(default=False)
+    course_enrolled = models.ManyToManyField('CourseInfo', related_name='enrolled_students', default="1")
     advisor = models.ForeignKey('AdminInfo',related_name='advising_students',on_delete=models.SET_NULL,null=True)
 
 class CourseInfo(models.Model):
@@ -66,7 +67,8 @@ class TA(models.Model):
 class Enrollment(models.Model):
     student = models.ForeignKey(StudentInfo, on_delete=models.CASCADE, related_name='enrollments')
     course = models.ForeignKey(CourseInfo, on_delete=models.CASCADE, related_name='enrollments')
-    points = models.IntegerField(default=0)  
+    points_assigned = models.DecimalField(decimal_places=1, max_digits=3, null=True, blank=True)  
+    is_waitlisted = models.BooleanField(default=False)  
 
     class Meta:
         unique_together = ('student', 'course')  
