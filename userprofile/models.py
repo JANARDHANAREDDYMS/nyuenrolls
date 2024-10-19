@@ -20,7 +20,6 @@ class StudentInfo(models.Model):
     School = models.CharField(max_length=50, choices=Schools)
     ta_course = models.ForeignKey('CourseInfo',null=True, blank=True, related_name='tas', on_delete=models.SET_NULL)
     is_ta = models.BooleanField(default=False)
-    course_enrolled = models.ManyToManyField('CourseInfo', related_name='enrolled_students',default="1")
     advisor = models.ForeignKey('AdminInfo',related_name='advising_students',on_delete=models.SET_NULL,null=True)
 
 class CourseInfo(models.Model):
@@ -63,3 +62,11 @@ class TA(models.Model):
 
     class Meta:
         unique_together = ('student', 'course')  
+
+class Enrollment(models.Model):
+    student = models.ForeignKey(StudentInfo, on_delete=models.CASCADE, related_name='enrollments')
+    course = models.ForeignKey(CourseInfo, on_delete=models.CASCADE, related_name='enrollments')
+    points = models.IntegerField(default=0)  # or DecimalField if you want to allow fractional points
+
+    class Meta:
+        unique_together = ('student', 'course')  # Ensure a student can enroll in the same course only once
