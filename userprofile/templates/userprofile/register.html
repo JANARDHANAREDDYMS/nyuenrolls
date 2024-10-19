@@ -77,7 +77,6 @@
 
 					<form method="POST" action="/userprofile/register/">
 						{% csrf_token %}
-						<input type="hidden" name="csrfmiddlewaretoken" value="n4h2lXtABdmbDXAZrWK62sxQmiKeLEs1kSJov3x8FLFTRss7CJRkcAQJXd95AmSZ">
 					
 						<!-- Username -->
 						<div class="input-group mb-3">
@@ -103,7 +102,7 @@
 								<span class="input-group-text"><i class="fas fa-key"></i></span>
 							</div>
 							<label for="password">Password</label>
-							<input type="password" name="password" required id="password" placeholder="Password">
+							<input type="password" name="password1" required id="password" placeholder="Password">
 						</div>
 					
 						<!-- Confirm Password -->
@@ -112,7 +111,7 @@
 								<span class="input-group-text"><i class="fas fa-key"></i></span>
 							</div>
 							<label for="confirm_password">Confirm Password</label>
-							<input type="password" name="confirm_password" required id="confirm_password" placeholder="Confirm Password">
+							<input type="password" name="password2" required id="confirm_password" placeholder="Confirm Password">
 						</div>
 					
 						<!-- N_id -->
@@ -191,7 +190,6 @@
 
 		 var form_fields = document.getElementsByTagName('input');
 
-// Set placeholders for each form field.
 document.getElementsByName('username')[0].placeholder = 'Username..';
 document.getElementsByName('email')[0].placeholder = 'Email..';
 document.getElementsByName('password')[0].placeholder = 'Enter password...';

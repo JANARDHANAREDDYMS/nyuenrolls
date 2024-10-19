@@ -4,7 +4,6 @@ from django.contrib.auth.models import User
 from .models import StudentInfo
 
 class CustomUserCreationForm(UserCreationForm):
-    # Fields from the StudentInfo model
     N_id = forms.CharField(max_length=8, required=True, label="Student ID (N_id)")
     Name = forms.CharField(max_length=100, required=True, label="Name")
     Education_Level = forms.ChoiceField(choices=StudentInfo.Edu_levels, required=True, label="Education Level")
@@ -12,24 +11,23 @@ class CustomUserCreationForm(UserCreationForm):
     School = forms.ChoiceField(choices=StudentInfo.Schools, required=True, label="School")
 
     class Meta:
-        model = User  # Use the User model for the basic user information
-        fields = ['username', 'email', 'password1', 'password2']  # Fields from the User model
+        model = User  
+        fields = ['username', 'email', 'password1', 'password2']  
 
     def save(self, commit=True):
-        # Save the user instance
-        user = super().save(commit=False)
+        # Save the user first
+        user = super().save(commit=commit)
+        
+        # Ensure that the user is saved before creating the StudentInfo
         if commit:
-            user.save()  # Save the User model instance
+            student_info = StudentInfo.objects.create(
+                user=user,  # Now we reference the saved user
+                N_id=self.cleaned_data['N_id'],
+                Name=self.cleaned_data['Name'],
+                Education_Level=self.cleaned_data['Education_Level'],
+                Phone_no=self.cleaned_data['Phone_no'],
+                School=self.cleaned_data['School'],
+                email=user.email  # Assuming email is a field in StudentInfo
+            )
         
-        # Create the StudentInfo instance using the cleaned data
-        student_info = StudentInfo.objects.create(
-            user=user,  # Link the StudentInfo to the created user
-            N_id=self.cleaned_data['N_id'],
-            Name=self.cleaned_data['Name'],
-            Education_Level=self.cleaned_data['Education_Level'],
-            Phone_no=self.cleaned_data['Phone_no'],
-            School=self.cleaned_data['School'],
-            email=user.email  # Set the email automatically from the User model
-        )
-        
-        return user  # Return the saved user instance
+        return user 
