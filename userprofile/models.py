@@ -66,7 +66,7 @@ class TA(models.Model):
 class Enrollment(models.Model):
     student = models.ForeignKey(StudentInfo, on_delete=models.CASCADE, related_name='enrollments')
     course = models.ForeignKey(CourseInfo, on_delete=models.CASCADE, related_name='enrollments')
-    points = models.IntegerField(default=0)  # or DecimalField if you want to allow fractional points
+    points = models.IntegerField(default=0)  
 
     class Meta:
-        unique_together = ('student', 'course')  # Ensure a student can enroll in the same course only once
+        unique_together = ('student', 'course')  
