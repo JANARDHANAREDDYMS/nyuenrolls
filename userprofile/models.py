@@ -33,6 +33,7 @@ class CourseInfo(models.Model):
     class_day = models.DateField()
     class_time = models.TimeField()
     description = models.CharField(max_length=1000)
+    points_assigned =  models.CharField(max_length=3)
     credits = models.DecimalField(decimal_places=1, max_digits=3)
 
 class AdminInfo(models.Model):
