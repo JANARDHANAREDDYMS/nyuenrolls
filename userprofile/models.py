@@ -17,57 +17,43 @@ class StudentInfo(models.Model):
     Education_Level = models.CharField(max_length=50, choices=Edu_levels)
     Phone_no = models.CharField(max_length=15)  
     School = models.CharField(max_length=50, choices=Schools)
-    ta_course = models.ForeignKey('CourseInfo',null=True, blank=True, related_name='tas', on_delete=models.SET_NULL)
+    ta_course = models.ForeignKey('courseEnroll.CourseInfo', null=True, blank=True, related_name='tas', on_delete=models.SET_NULL)  # Use app label 'coursenroll'
     is_ta = models.BooleanField(default=False)
-    course_enrolled = models.ManyToManyField('CourseInfo', related_name='enrolled_students')
-    advisor = models.ForeignKey('AdminInfo',related_name='advising_students',on_delete=models.SET_NULL,null=True)
-
-class CourseInfo(models.Model):
-    course_id = models.CharField(max_length=11, primary_key=True)
-    name = models.CharField(max_length=100)
-    Department = models.ForeignKey('DepartmentInfo',related_name='courses',on_delete=models.SET_NULL,null=True)
-    Instructor = models.OneToOneField('FacultyInfo', on_delete=models.SET_NULL, related_name='course',null=True)
-    course_Capacity = models.IntegerField()
-    phd_course_capacity = models.IntegerField()
-    class_day = models.DateField()
-    class_time = models.TimeField()
-    description = models.CharField(max_length=1000)
-    points_assigned =  models.CharField(max_length=3,null=True)
-    credits = models.DecimalField(decimal_places=1, max_digits=3)
+    course_enrolled = models.ManyToManyField('courseEnroll.CourseInfo', related_name='enrolled_students')  # Use app label 'coursenroll'
+    advisor = models.ForeignKey('AdminInfo', related_name='advising_students', on_delete=models.SET_NULL, null=True)
 
 class AdminInfo(models.Model):
     admin_id = models.CharField(max_length=9)
-    Name = models.CharField()
+    Name = models.CharField(max_length=100, blank=True, null=True)
     email = models.EmailField()
-    phone_no = models.CharField()
+    phone_no = models.CharField(max_length=15)
 
 class DepartmentInfo(models.Model):
-    departments = [("CSE","CSE"),
-                   ("CE","CE"),
-                   ("MOT","MOT")]
-    department_id = models.CharField(max_length=8,primary_key=True)
+    departments = [("CSE", "CSE"),
+                   ("CE", "CE"),
+                   ("MOT", "MOT")]
+    department_id = models.CharField(max_length=8, primary_key=True)
     Department = models.CharField(choices=departments)
+
+    def __str__(self):
+        return self.Department 
+
 
 class FacultyInfo(models.Model):
     faculty_id = models.CharField(max_length=8, primary_key=True)
     Name = models.CharField(max_length=100)
     email = models.EmailField(max_length=100)
-    Phone_no = models.CharField(max_length=15) 
+    Phone_no = models.CharField(max_length=15)
     ta_students = models.ManyToManyField(StudentInfo, through='TA', related_name='faculty_tas')
+
+
+    def __str__(self):
+        return self.Name 
 
 class TA(models.Model):
     student = models.OneToOneField(StudentInfo, on_delete=models.CASCADE)
-    course = models.ForeignKey(CourseInfo, on_delete=models.CASCADE)
+    course = models.ForeignKey('courseEnroll.CourseInfo', on_delete=models.CASCADE)  # Use app label 'coursenroll'
     faculty = models.ForeignKey(FacultyInfo, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('student', 'course')  
-
-class Enrollment(models.Model):
-    student = models.ForeignKey(StudentInfo, on_delete=models.CASCADE, related_name='enrollments')
-    course = models.ForeignKey(CourseInfo, on_delete=models.CASCADE, related_name='enrollments')
-    points_assigned = models.DecimalField(decimal_places=1, max_digits=3, null=True, blank=True)  
-    is_waitlisted = models.BooleanField(default=False)  
-
-    class Meta:
-        unique_together = ('student', 'course')  
+        unique_together = ('student', 'course')

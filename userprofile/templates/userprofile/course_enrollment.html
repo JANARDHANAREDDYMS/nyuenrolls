@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Courses Enrolled</title>
+</head>
+<body>
+    <h1>Courses Enrolled</h1>
+    <ul>
+        {% for course in courses_enrolled %}
+            <li>{{ course.name }} ({{ course.course_id }})</li>
+        {% empty %}
+            <li>No courses enrolled yet.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

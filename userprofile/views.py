@@ -3,7 +3,8 @@ from django.http import HttpResponse
 from django.template import loader
 from .forms import CustomUserCreationForm
 from django.contrib.auth.forms import UserCreationForm ,AuthenticationForm
-from .models import StudentInfo
+from .models import *
+from courseEnroll.models import *
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from django.shortcuts import render, redirect
@@ -55,7 +56,15 @@ def login_request(request):
 @login_required
 def dashboard(request):
     student_info = StudentInfo.objects.get(user=request.user)
-    return render(request, 'userprofile/dashboard.html', {'student_info': student_info})
+
+    return render(request, 'userprofile/dashboard.html', {'student_info,course_enrolled': student_info})
+
+@login_required
+def course_enrolled(request):
+    student_info = StudentInfo.objects.get(user=request.user)
+    courses_enrolled = student_info.course_enrolled.all()
+
+    return render(request, 'courses_enrollement.html', {'courses_enrolled': courses_enrolled})
 
 def logout_request(request):
     logout(request)

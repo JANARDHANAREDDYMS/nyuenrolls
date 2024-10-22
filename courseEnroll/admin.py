@@ -13,4 +13,3 @@ class EnrollmentAdmin(admin.ModelAdmin):
     search_fields = ('student__name', 'course__name')  # Fields to search on
     list_filter = ('is_waitlisted', 'course')  # Filters to apply on the right side
     raw_id_fields = ('student', 'course')  # To use a more efficient lookup for foreign keys
-
