@@ -29,14 +29,12 @@ class AdminInfo(models.Model):
     phone_no = models.CharField(max_length=15)
 
 class DepartmentInfo(models.Model):
-    departments = [("CSE", "CSE"),
-                   ("CE", "CE"),
-                   ("MOT", "MOT")]
+    
     department_id = models.CharField(max_length=8, primary_key=True)
-    Department = models.CharField(choices=departments)
+    name = models.CharField(default='CSE')
 
     def __str__(self):
-        return self.Department 
+        return self.name 
 
 
 class FacultyInfo(models.Model):
