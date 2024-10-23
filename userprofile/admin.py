@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import StudentInfo, FacultyInfo, TA, DepartmentInfo
+from .models import StudentInfo, FacultyInfo, TA, DepartmentInfo,AdminInfo
 
 @admin.register(StudentInfo)
 class StudentInfoAdmin(admin.ModelAdmin):
@@ -17,3 +17,7 @@ class TAAdmin(admin.ModelAdmin):
 @admin.register(DepartmentInfo)
 class DepartmentInfoAdmin(admin.ModelAdmin):
     list_display= ['department_id','name']
+
+@admin.register(AdminInfo)
+class AdminInfoAdmin(admin.ModelAdmin):
+    list_display = ['admin_id','Name','email','phone_no']

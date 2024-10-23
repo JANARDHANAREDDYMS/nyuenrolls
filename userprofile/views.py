@@ -9,6 +9,8 @@ from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from courseEnroll.views import dashboard
+from django.urls import reverse 
 
 
 def userinfo(request):
@@ -47,17 +49,16 @@ def login_request(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect('dashboard')  
+                return redirect('courseEnroll:dashboard')  
     else:
         form = AuthenticationForm()
     return render(request, 'userprofile/login.html', {'form': form})
 
-
 @login_required
-def dashboard(request):
+def user_profile(request):
     student_info = StudentInfo.objects.get(user=request.user)
 
-    return render(request, 'userprofile/dashboard.html', {'student_info,course_enrolled': student_info})
+    return render(request, 'userprofile/user_profile.html', {'student_info': student_info})
 
 @login_required
 def course_enrolled(request):
@@ -68,7 +69,7 @@ def course_enrolled(request):
 
 def logout_request(request):
     logout(request)
-    return redirect('login') 
+    return redirect('userprofile:login') 
 
 def scheduler(request):
     return render(request, "userprofile/scheduler.html")

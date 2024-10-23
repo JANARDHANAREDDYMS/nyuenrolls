@@ -20,4 +20,5 @@ from django.urls import path,include
 urlpatterns = [
     path("userprofile/",include("userprofile.urls")),
     path('admin/', admin.site.urls), 
+    path('courseEnroll/', include('courseEnroll.urls')),
 ]

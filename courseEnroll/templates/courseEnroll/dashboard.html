@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .button {
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <a href="{% url 'userprofile:user_profile' %}" class="button">Go to User Profile</a>
+
+    <h1>Welcome, {{ student_info.Name }}</h1>
+
+    <h2>Your Enrolled Courses</h2>
+    <ul>
+        {% if enrolled_courses %}
+            {% for course in enrolled_courses %}
+                <li>
+                    <h2>{{ course.name }} ({{ course.course_id }})</h2>
+                    <strong>Instructor :</strong> {{ course.Instructor.name }}<br>  
+                    <strong>Description :</strong> {{ course.description }}<br>
+                    <strong>Class Time :</strong> {{ course.class_time }}
+                </li>
+            {% endfor %}
+        {% else %}
+            <li>You are not enrolled in any courses.</li>
+        {% endif %}
+    </ul>
+
+    <h2>Search Courses</h2>
+    <form method="post" action="{%url 'courseEnroll:search_courses'%}">
+        {% csrf_token %}
+        <input type="search" name="search_courses"  placeholder="Enter Course ID" required>
+        <button type="submit" class="button">Search</button>
+    </form>
+</body>
+</html>

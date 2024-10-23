@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <title>Search</title>
+</head>
+<body>
+    <a href="{% url 'userprofile:user_profile' %}" class="button">Go to User Profile</a>
+    {% if search_courses %}
+    <h2>You searched for {{ search_courses }}</h2>
+    <h2>Matched Courses</h2>
+    <form method="post" action="{% url 'courseEnroll:select_courses' %}">
+        {% csrf_token %}
+        {% for course in courses %}
+            <div>
+                <input type="checkbox" name="selected_courses" value="{{ course.course_id }}" id="course_{{ course.course_id }}">
+                <label for="course_{{ course.course_id }}">
+                    <h3>{{ course.name }}</h3>
+                    <p>{{ course.description }}</p>
+                </label>
+            </div>
+            <br>
+        {% endfor %}
+        <button type="submit" class="button">Enroll</button>
+    </form>
+    {% else %}
+    <h2> Search for a course</h2>
+    {% endif %} 
+</body>
+</html>

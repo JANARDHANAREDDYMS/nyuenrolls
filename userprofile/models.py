@@ -28,6 +28,9 @@ class AdminInfo(models.Model):
     email = models.EmailField()
     phone_no = models.CharField(max_length=15)
 
+    def __str__(self):
+        return self.Name
+
 class DepartmentInfo(models.Model):
     
     department_id = models.CharField(max_length=8, primary_key=True)
@@ -50,7 +53,7 @@ class FacultyInfo(models.Model):
 
 class TA(models.Model):
     student = models.OneToOneField(StudentInfo, on_delete=models.CASCADE)
-    course = models.ForeignKey('courseEnroll.CourseInfo', on_delete=models.CASCADE)  # Use app label 'coursenroll'
+    course = models.ForeignKey('courseEnroll.CourseInfo', on_delete=models.CASCADE)  
     faculty = models.ForeignKey(FacultyInfo, on_delete=models.CASCADE)
 
     class Meta:
