@@ -159,7 +159,47 @@
             background-color: #f8d7da;
             color: #721c24;
         }
+        
+                /* New styles for modifying courses */
+                .course-list {
+            margin-top: 20px;
+            text-align: left;
+        }
 
+        .course-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .update-button {
+            background-color: blue;
+            color: white;
+            padding: 5px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .update-button:hover {
+            background-color: darkblue;
+        }
+
+        .delete-button {
+            background-color: red;
+            color: white;
+            padding: 5px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .delete-button:hover {
+            background-color: darkred;
+        }
     </style>
     
 </head>
@@ -190,7 +230,7 @@
             <span class="close-btn" onclick="closeModal()">&times;</span>
             <h2>Manage Courses</h2>
             <div class="modal-option" onclick="showAddCourseForm()">Add Course</div>
-            <div class="modal-option">Modify Courses</div>
+            <div class="modal-option" onclick="showModifyCourses()">Modify Courses</div>
         </div>
     </div>
 
@@ -234,6 +274,26 @@
             </form>
         </div>
     </div>
+
+    <!-- Modify Courses Modal -->
+    <div id="modifyCoursesModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModifyCoursesModal()">&times;</span>
+            <h2>Modify Courses</h2>
+            <div class="course-list" id="courseList">
+                {% for course in courses %}
+                    <div class="course-item">
+                        <span>{{ course.course_id }}: {{ course.name }}</span>
+                        <div>
+                            <button class="update-button" onclick="updateCourse('{{ course.course_id }}')">Update</button>
+                            <button class="delete-button" onclick="deleteCourse('{{ course.course_id }}')">Delete</button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
 
     <script>
         document.querySelector('.logout').addEventListener('click', function() {
@@ -344,6 +404,34 @@
             const errorFields = document.querySelectorAll('.error');
             errorFields.forEach(field => {
                 field.classList.remove('error');
+            });
+        }
+        
+        function showModifyCourses() {
+            closeModal();
+            document.getElementById('modifyCoursesModal').style.display = 'block';
+        }
+
+        function closeModifyCoursesModal() {
+            document.getElementById('modifyCoursesModal').style.display = 'none';
+        }
+
+        function updateCourse(courseId) {
+            // Implement the update course functionality here
+            alert(`Update course with ID: ${courseId}`);
+        }
+
+        function deleteCourse(courseId) {
+            // Implement the delete course functionality here
+            alert(`Delete course with ID: ${courseId}`);
+        }
+                // Close the modals when clicking outside of them
+        window.onclick = function(event) {
+            const modals = [document.getElementById('courseModal'), document.getElementById('addCourseModal'), document.getElementById('modifyCoursesModal')];
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
             });
         }
     </script>
