@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+    
+        h1 {
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 32px;
+            color: #333;
+        }
+    
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            width: 60%;
+        }
+    
+        .dashboard-option {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 40px;
+            border-radius: 8px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+    
+        .dashboard-option:hover {
+            background-color: #45a049;
+        }
+    
+        .logout {
+            margin-top: 20px;
+            font-size: 18px;
+            cursor: pointer;
+            color: #d9534f;
+        }
+    
+        /* Pop-up Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+    
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 40%;  /* Adjusted width for better layout */
+            text-align: center;
+        }
+    
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    
+        .close-btn:hover {
+            color: black;
+        }
+    
+        .modal-option {
+            margin: 10px 0;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    
+        .modal-option:hover {
+            background-color: #45a049;
+        }
+    
+        /* Input styles */
+        input, textarea {
+            width: 90%; /* Make all input types the same width */
+            padding: 10px; /* Ensure consistent padding */
+            margin: 10px 0; /* Ensure consistent margin */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            align-self:auto;
+        }
+        select {
+            width: 93%; /* Make all input types the same width */
+            padding: 10px; /* Ensure consistent padding */
+            margin: 10px 0; /* Ensure consistent margin */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            align-self:auto;
+        }
+    
+        .add-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            width: auto;
+            margin-top: 20px;
+        }
+
+        .add-button:hover {
+            background-color: #45a049;
+        }
+
+        /* Highlighting required fields */
+        .error {
+            border: 2px solid red;
+        }
+    </style>
+    
+</head>
+<body>
+
+    <h1>Welcome to Admin Dashboard</h1>
+
+    <div class="dashboard-container">
+        <div class="dashboard-option" onclick="openModal()">Manage Courses</div>
+        <div class="dashboard-option">Manage Student Enrollment</div>
+        <div class="dashboard-option">Manage Override Forms</div>
+        <div class="dashboard-option">See Preregistration Data</div>
+    </div>
+
+    <div class="logout">Logout</div>
+
+    <!-- Pop-up Modal -->
+    <div id="courseModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h2>Manage Courses</h2>
+            <div class="modal-option" onclick="showAddCourseForm()">Add Course</div>
+            <div class="modal-option">Modify Courses</div>
+        </div>
+    </div>
+
+    <!-- Add Course Form Modal -->
+    <div id="addCourseModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeAddCourseModal()">&times;</span>
+            <h2>Add Course</h2>
+            <input type="text" id="courseId" placeholder="Course ID" required>
+            <input type="text" id="courseName" placeholder="Course Name" required>
+            
+            <!-- Department Dropdown -->
+            <select id="department" required>
+                <option value="">Select Department</option>
+                <option value="Computer Science">Computer Science</option>
+                <option value="EEE">Electrical and Computer Engineering</option>
+                <option value="Theatre">Theatre</option>
+            </select>
+
+            <input type="text" id="instructor" placeholder="Instructor" required>
+            <input type="number" id="capacity" placeholder="Capacity" required min="0" oninput="validity.valid||(value='');">
+            <input type="number" id="phdSeats" placeholder="PhD Student Seats" required min="0" oninput="validity.valid||(value='');">
+
+            <!-- Class Day Dropdown -->
+            <select id="classDay" required>
+                <option value="">Select Class Day</option>
+                <option value="Monday">Monday</option>
+                <option value="Tuesday">Tuesday</option>
+                <option value="Wednesday">Wednesday</option>
+                <option value="Thursday">Thursday</option>
+                <option value="Friday">Friday</option>
+                <option value="Saturday">Saturday</option>
+                <option value="Sunday">Sunday</option>
+            </select>
+            <input type="text" id="classTime" placeholder="Class Time" required>
+            <textarea id="courseDescription" placeholder="Course Description" rows="4"></textarea>
+            <input type="number" id="credits" placeholder="Credits" required min="0" oninput="validity.valid||(value='');">
+            <button class="add-button" onclick="addCourse()">Add Course</button>
+        </div>
+    </div>
+
+    <script>
+        document.querySelector('.logout').addEventListener('click', function() {
+            window.location.href = "{% url 'userprofile:logout' %}";
+        });
+        
+        // Open the Manage Courses modal
+        function openModal() {
+            document.getElementById('courseModal').style.display = 'block';
+        }
+
+        // Close the Manage Courses modal
+        function closeModal() {
+            document.getElementById('courseModal').style.display = 'none';
+        }
+
+        // Open the Add Course form
+        function showAddCourseForm() {
+            closeModal();
+            document.getElementById('addCourseModal').style.display = 'block';
+        }
+
+        // Close the Add Course modal
+        function closeAddCourseModal() {
+            document.getElementById('addCourseModal').style.display = 'none';
+        }
+
+        // Close the modal if the user clicks outside of it
+        window.onclick = function(event) {
+            const courseModal = document.getElementById('courseModal');
+            const addCourseModal = document.getElementById('addCourseModal');
+            if (event.target === courseModal) {
+                closeModal();
+            } else if (event.target === addCourseModal) {
+                closeAddCourseModal();
+            }
+        }
+
+        // Function to handle adding the course
+        function addCourse() {
+            // Clear previous error highlights
+            clearErrorHighlights();
+
+            const courseId = document.getElementById('courseId').value;
+            const courseName = document.getElementById('courseName').value;
+            const department = document.getElementById('department').value;
+            const instructor = document.getElementById('instructor').value;
+            const capacity = document.getElementById('capacity').value;
+            const phdSeats = document.getElementById('phdSeats').value;
+            const classDay = document.getElementById('classDay').value;
+            const classTime = document.getElementById('classTime').value;
+            const courseDescription = document.getElementById('courseDescription').value;
+            const credits = document.getElementById('credits').value;
+
+            let hasError = false;
+
+            // Check for empty fields (except description)
+            if (!courseId) {
+                highlightField('courseId');
+                hasError = true;
+            }
+            if (!courseName) {
+                highlightField('courseName');
+                hasError = true;
+            }
+            if (!department) {
+                highlightField('department');
+                hasError = true;
+            }
+            if (!instructor) {
+                highlightField('instructor');
+                hasError = true;
+            }
+            if (capacity === '') {
+                highlightField('capacity');
+                hasError = true;
+            }
+            if (phdSeats === '') {
+                highlightField('phdSeats');
+                hasError = true;
+            }
+            if (!classDay) {
+                highlightField('classDay');
+                hasError = true;
+            }
+            if (!classTime) {
+                highlightField('classTime');
+                hasError = true;
+            }
+            if (credits === '') {
+                highlightField('credits');
+                hasError = true;
+            }
+
+            if (!hasError) {
+                alert('Course added successfully!'); // Here you would handle adding the course
+                closeAddCourseModal();
+            }
+        }
+
+        // Function to highlight fields
+        function highlightField(fieldId) {
+            document.getElementById(fieldId).classList.add('error');
+        }
+
+        // Function to clear error highlights
+        function clearErrorHighlights() {
+            const errorFields = document.querySelectorAll('.error');
+            errorFields.forEach(field => {
+                field.classList.remove('error');
+            });
+        }
+    </script>
+</body>
+</html>

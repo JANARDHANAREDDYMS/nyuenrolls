@@ -10,6 +10,7 @@ from django.contrib.auth import login, authenticate, logout
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from courseEnroll.views import dashboard
+from systemadmin.views import admin_dashboard
 from django.urls import reverse 
 
 
@@ -49,7 +50,12 @@ def login_request(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect('courseEnroll:dashboard')  
+                
+                # Check if the user is a superuser
+                if user.is_superuser:
+                    return redirect('systemadmin:dashboard')  # Redirect to the admin dashboard
+                else:
+                    return redirect('courseEnroll:dashboard')  # Redirect to the normal dashboard
     else:
         form = AuthenticationForm()
     return render(request, 'userprofile/login.html', {'form': form})
