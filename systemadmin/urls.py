@@ -4,5 +4,5 @@ from .views import admin_dashboard
 app_name = 'systemadmin'
 
 urlpatterns = [
-    path('dashboard/', admin_dashboard, name='dashboard'),
+    path('admin_dashboard/', admin_dashboard, name='dashboard'),
 ]
