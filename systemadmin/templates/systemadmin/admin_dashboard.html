@@ -125,6 +125,10 @@
     </div>
 
     <script>
+        document.querySelector('.logout').addEventListener('click', function() {
+            window.location.href = "{% url 'userprofile:logout' %}";
+        });
+        
         // Open the modal
         function openModal() {
             document.getElementById('courseModal').style.display = 'block';
