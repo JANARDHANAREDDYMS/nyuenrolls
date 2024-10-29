@@ -35,7 +35,7 @@ def register_request(request):
                 School=form.cleaned_data['School']
             )
             login(request, user)  
-            return redirect('login')  
+            return redirect('userprofile:login')  
     else:
         form = CustomUserCreationForm()
     return render(request, 'userprofile/register.html', {'form': form})
