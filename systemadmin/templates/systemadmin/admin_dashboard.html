@@ -138,12 +138,42 @@
         .error {
             border: 2px solid red;
         }
+        .messages {
+            width: 60%;
+            margin: 20px auto;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
     </style>
     
 </head>
 <body>
 
     <h1>Welcome to Admin Dashboard</h1>
+
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
 
     <div class="dashboard-container">
         <div class="dashboard-option" onclick="openModal()">Manage Courses</div>
@@ -169,36 +199,39 @@
         <div class="modal-content">
             <span class="close-btn" onclick="closeAddCourseModal()">&times;</span>
             <h2>Add Course</h2>
-            <input type="text" id="courseId" placeholder="Course ID" required>
-            <input type="text" id="courseName" placeholder="Course Name" required>
+            <form id="addCourseForm" method="POST" action="{% url 'systemadmin:course_add' %}">
+                {% csrf_token %}
+
+                <input type="text" id="courseId" name="courseId" placeholder="Course ID" required>
+                <input type="text" id="courseName" name="courseName" placeholder="Course Name" required>
             
-            <!-- Department Dropdown -->
-            <select id="department" required>
-                <option value="">Select Department</option>
-                <option value="Computer Science">Computer Science</option>
-                <option value="EEE">Electrical and Computer Engineering</option>
-                <option value="Theatre">Theatre</option>
-            </select>
+                <select id="department" name="department" required>
+                    <option value="">Select Department</option>
+                    {% for dept in departments %}
+                        <option value="{{ dept.department_id }}">{{ dept.name }}</option>
+                    {% endfor %}
+                </select>
 
-            <input type="text" id="instructor" placeholder="Instructor" required>
-            <input type="number" id="capacity" placeholder="Capacity" required min="0" oninput="validity.valid||(value='');">
-            <input type="number" id="phdSeats" placeholder="PhD Student Seats" required min="0" oninput="validity.valid||(value='');">
+                <input type="text" id="instructor" name="instructor" placeholder="Instructor" required>
+                <input type="number" id="capacity" name="capacity" placeholder="Capacity" required min="0" oninput="validity.valid||(value='');">
+                <input type="number" id="phdSeats" name="phdSeats" placeholder="PhD Student Seats" required min="0" oninput="validity.valid||(value='');">
 
-            <!-- Class Day Dropdown -->
-            <select id="classDay" required>
-                <option value="">Select Class Day</option>
-                <option value="Monday">Monday</option>
-                <option value="Tuesday">Tuesday</option>
-                <option value="Wednesday">Wednesday</option>
-                <option value="Thursday">Thursday</option>
-                <option value="Friday">Friday</option>
-                <option value="Saturday">Saturday</option>
-                <option value="Sunday">Sunday</option>
-            </select>
-            <input type="text" id="classTime" placeholder="Class Time" required>
-            <textarea id="courseDescription" placeholder="Course Description" rows="4"></textarea>
-            <input type="number" id="credits" placeholder="Credits" required min="0" oninput="validity.valid||(value='');">
-            <button class="add-button" onclick="addCourse()">Add Course</button>
+                <!-- Class Day Dropdown -->
+                <select id="classDay" name="classDay" required>
+                    <option value="">Select Class Day</option>
+                    <option value="Monday">Monday</option>
+                    <option value="Tuesday">Tuesday</option>
+                    <option value="Wednesday">Wednesday</option>
+                    <option value="Thursday">Thursday</option>
+                    <option value="Friday">Friday</option>
+                    <option value="Saturday">Saturday</option>
+                    <option value="Sunday">Sunday</option>
+                </select>
+                <input type="text" id="classTime" name="classTime" placeholder="Class Time" required>
+                <textarea id="courseDescription" name="courseDescription" placeholder="Course Description" rows="4" maxlength="1000"></textarea>
+                <input type="number" id="credits" name="credits" placeholder="Credits" required min="0" oninput="validity.valid||(value='');">
+                <button class="add-button" onclick="addCourse()">Add Course</button>
+            </form>
         </div>
     </div>
 
@@ -296,7 +329,7 @@
             }
 
             if (!hasError) {
-                alert('Course added successfully!'); // Here you would handle adding the course
+                //alert('Course added successfully!'); // Here you would handle adding the course
                 closeAddCourseModal();
             }
         }
