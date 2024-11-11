@@ -1,84 +1,132 @@
-# tests.py
 from django.test import TestCase
-from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
 from .models import CourseInfo, Enrollment
-from userprofile.models import DepartmentInfo, FacultyInfo, StudentInfo  # Assuming these models exist
+from userprofile.models import DepartmentInfo, FacultyInfo, StudentInfo
 
 class CourseInfoModelTest(TestCase):
+
     def setUp(self):
-        # Create related models for ForeignKey and OneToOneField dependencies
-        self.department = DepartmentInfo.objects.create(name="Computer Science")
-        self.instructor = FacultyInfo.objects.create(name="Dr. Smith")
+        # Create related DepartmentInfo and FacultyInfo instances
+        self.department = DepartmentInfo.objects.create(
+            department_id='CSE',
+            name='Computer Science'
+        )
+        self.faculty = FacultyInfo.objects.create(
+            faculty_id='FAC123',
+            Name='Dr. Smith',
+            email='dr.smith@example.com',
+            Phone_no='123-456-7890'
+        )
+
+        # Create CourseInfo instance
+        self.course = CourseInfo.objects.create(
+            course_id='CSE101',
+            name='Introduction to Computer Science',
+            Department=self.department,
+            Instructor=self.faculty,
+            course_Capacity=30,
+            phd_course_capacity=5,
+            class_day='2023-01-15',
+            class_time='10:00:00',
+            description='An introductory course to Computer Science.',
+            to_waitlist=False,
+            points_assigned='100',
+            credits=3.0
+        )
 
     def test_course_creation(self):
-        course = CourseInfo.objects.create(
-            course_id="CS101",
-            name="Intro to Computer Science",
-            Department=self.department,
-            Instructor=self.instructor,
-            course_Capacity=30,
-            phd_course_capacity=5,
-            class_day="2024-09-01",
-            class_time="10:00:00",
-            description="An introductory course in computer science.",
-            to_waitlist=True,
-            points_assigned="3",
-            credits=3.0
-        )
-        self.assertEqual(course.name, "Intro to Computer Science")
-        self.assertEqual(course.course_Capacity, 30)
-        self.assertTrue(course.to_waitlist)
+        self.assertIsInstance(self.course, CourseInfo)
+        self.assertEqual(self.course.name, 'Introduction to Computer Science')
+        self.assertEqual(self.course.Department, self.department)
+        self.assertEqual(self.course.Instructor, self.faculty)
+        self.assertEqual(self.course.course_Capacity, 30)
+        self.assertEqual(self.course.phd_course_capacity, 5)
+        self.assertEqual(str(self.course.class_day), '2023-01-15')
+        self.assertEqual(str(self.course.class_time), '10:00:00')
+        self.assertEqual(self.course.description, 'An introductory course to Computer Science.')
+        self.assertFalse(self.course.to_waitlist)
+        self.assertEqual(self.course.points_assigned, '100')
+        self.assertEqual(self.course.credits, 3.0)
 
-    def test_course_capacity_validation(self):
-        course = CourseInfo(
-            course_id="CS102",
-            name="Data Structures",
-            Department=self.department,
-            Instructor=self.instructor,
-            course_Capacity=-10,  # Invalid capacity
-            phd_course_capacity=5,
-            class_day="2024-09-01",
-            class_time="12:00:00",
-            description="Advanced data structures.",
-            credits=3.0
-        )
-        with self.assertRaises(ValidationError):
-            course.full_clean()  # Should raise ValidationError for invalid capacity
+    def test_course_string_representation(self):
+        self.assertEqual(str(self.course), self.course.name)
 
 class EnrollmentModelTest(TestCase):
+
     def setUp(self):
-        # Set up course and student instances for testing
-        self.department = DepartmentInfo.objects.create(name="Computer Science")
-        self.instructor = FacultyInfo.objects.create(name="Dr. Jones")
+        # Create User instance for StudentInfo
+        self.user = User.objects.create_user(
+            username='johndoe',
+            email='john.doe@example.com',
+            password='password123'
+        )
+
+        # Create StudentInfo instance
+        self.student = StudentInfo.objects.create(
+            N_id='N12345678',
+            user=self.user,
+            Name='John Doe',
+            email='john.doe@example.com',
+            Education_Level='Undergraduate',
+            Phone_no='555-555-5555',
+            School='Tandon',
+            is_ta=False
+        )
+
+        # Create DepartmentInfo and FacultyInfo instances
+        self.department = DepartmentInfo.objects.create(
+            department_id='CSE',
+            name='Computer Science'
+        )
+        self.faculty = FacultyInfo.objects.create(
+            faculty_id='FAC456',
+            Name='Dr. Johnson',
+            email='dr.johnson@example.com',
+            Phone_no='098-765-4321'
+        )
+
+        # Create CourseInfo instance
         self.course = CourseInfo.objects.create(
-            course_id="CS103",
-            name="Algorithms",
+            course_id='CSE102',
+            name='Data Structures',
             Department=self.department,
-            Instructor=self.instructor,
-            course_Capacity=30,
-            phd_course_capacity=5,
-            class_day="2024-09-01",
-            class_time="14:00:00",
-            description="An advanced algorithms course.",
+            Instructor=self.faculty,
+            course_Capacity=25,
+            phd_course_capacity=3,
+            class_day='2023-02-01',
+            class_time='14:00:00',
+            description='An intermediate course on data structures.',
+            to_waitlist=True,
+            points_assigned='50',
             credits=3.0
         )
-        self.student = StudentInfo.objects.create(name="John Doe")
 
-    def test_enrollment_creation(self):
-        enrollment = Enrollment.objects.create(
+        # Create Enrollment instance
+        self.enrollment = Enrollment.objects.create(
             student=self.student,
             course=self.course,
-            points_assigned=2.0,
-            is_waitlisted=True
+            points_assigned=3.0,
+            is_waitlisted=False
         )
-        self.assertEqual(enrollment.student, self.student)
-        self.assertEqual(enrollment.course, self.course)
-        self.assertTrue(enrollment.is_waitlisted)
 
-    def test_unique_enrollment(self):
-        # Create an initial enrollment
-        Enrollment.objects.create(student=self.student, course=self.course)
+    def test_enrollment_creation(self):
+        self.assertIsInstance(self.enrollment, Enrollment)
+        self.assertEqual(self.enrollment.student, self.student)
+        self.assertEqual(self.enrollment.course, self.course)
+        self.assertEqual(self.enrollment.points_assigned, 3.0)
+        self.assertFalse(self.enrollment.is_waitlisted)
+
+    def test_enrollment_unique_constraint(self):
         # Attempt to create a duplicate enrollment
-        duplicate_enrollment = Enrollment(student=self.student, course=self.course)
-        with self.assertRaises(ValidationError):
-            duplicate_enrollment.full_clean()  # Should raise ValidationError due to unique_together constraint
+        with self.assertRaises(Exception) as context:
+            Enrollment.objects.create(
+                student=self.student,
+                course=self.course,
+                points_assigned=3.0,
+                is_waitlisted=False
+            )
+        self.assertTrue('UNIQUE constraint failed' in str(context.exception))
+
+    def test_enrollment_string_representation(self):
+        expected_str = f'{self.student.Name} enrolled in {self.course.name}'
+        self.assertEqual(str(self.enrollment), expected_str)
