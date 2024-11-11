@@ -52,7 +52,7 @@ class FacultyInfo(models.Model):
         return self.Name 
 
 class TA(models.Model):
-    student = models.OneToOneField(StudentInfo, on_delete=models.CASCADE)
+    student = models.ForeignKey(StudentInfo, on_delete=models.CASCADE)
     course = models.ForeignKey('courseEnroll.CourseInfo', on_delete=models.CASCADE)  
     faculty = models.ForeignKey(FacultyInfo, on_delete=models.CASCADE)
 

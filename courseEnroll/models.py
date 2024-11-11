@@ -13,6 +13,10 @@ class CourseInfo(models.Model):
     to_waitlist = models.BooleanField(blank=True, default=False)
     points_assigned = models.CharField(max_length=3, null=True, blank=True)
     credits = models.DecimalField(decimal_places=1, max_digits=3)
+    
+    def __str__(self):
+        return self.name
+    
 
 class Enrollment(models.Model):
     student = models.ForeignKey('userprofile.StudentInfo', on_delete=models.CASCADE, related_name='enrollments')  # Use app label 'userprofile'
@@ -22,3 +26,6 @@ class Enrollment(models.Model):
 
     class Meta:
         unique_together = ('student', 'course')
+    
+    def __str__(self):
+        return f'{self.student.Name} enrolled in {self.course.name}'
