@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
+from django.db import IntegrityError
 from .models import CourseInfo, Enrollment
 from userprofile.models import DepartmentInfo, FacultyInfo, StudentInfo
 
@@ -118,14 +119,13 @@ class EnrollmentModelTest(TestCase):
 
     def test_enrollment_unique_constraint(self):
         # Attempt to create a duplicate enrollment
-        with self.assertRaises(Exception) as context:
+        with self.assertRaises(IntegrityError):
             Enrollment.objects.create(
                 student=self.student,
                 course=self.course,
                 points_assigned=3.0,
                 is_waitlisted=False
             )
-        self.assertTrue('UNIQUE constraint failed' in str(context.exception))
 
     def test_enrollment_string_representation(self):
         expected_str = f'{self.student.Name} enrolled in {self.course.name}'
