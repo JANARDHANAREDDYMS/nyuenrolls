@@ -9,6 +9,8 @@
             display: flex;
             flex-direction: column;
             align-items: flex-start;
+            font-family: Arial, sans-serif;
+            padding: 20px;
         }
         .button {
             margin-bottom: 20px;
@@ -22,6 +24,13 @@
         .button:hover {
             background-color: #0056b3;
         }
+        .course-item {
+            margin: 10px 0;
+        }
+        .delete-form {
+            display: none;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -29,27 +38,95 @@
 
     <h1>Welcome, {{ student_info.Name }}</h1>
 
+    {% if messages %}
+    <script type="text/JavaScript">
+        {% for message in messages %}
+            alert("{{ message }}")
+        {% endfor %}
+    </script>
+    {% endif %}
+    
     <h2>Your Enrolled Courses</h2>
+    <form method="post" action="{% url 'courseEnroll:search_courses' %}">
+        {% csrf_token %}
+        <input type="search" name="search_courses" placeholder="Enter Course ID" required>
+        <input type="hidden" name="action" id="formAction" value="enroll">
+        <button type="submit" class="button" onclick="setAction('enroll')">Enroll into more courses</button>
+    </form>
+
     <ul>
         {% if enrolled_courses %}
-            {% for course in enrolled_courses %}
+            {% for item in enrolled_courses %}
                 <li>
-                    <h2>{{ course.name }} ({{ course.course_id }})</h2>
-                    <strong>Instructor :</strong> {{ course.Instructor.name }}<br>  
-                    <strong>Description :</strong> {{ course.description }}<br>
-                    <strong>Class Time :</strong> {{ course.class_time }}
+                    <h2>{{ item.course.name }} ({{ item.course.course_id }})</h2>
+                    <strong>Instructor :</strong> {{ item.course.Instructor.Name }}<br>  
+                    <strong>Description :</strong> {{ item.course.description }}<br>
+                    <strong>Credits :</strong> {{ item.course.credits }}<br> 
+                    <strong>Class Time :</strong> {{ item.course.start_time }} <a>--</a> {{ item.course.end_time }}<br>
                 </li>
             {% endfor %}
         {% else %}
-            <li>You are not enrolled in any courses.</li>
+            <li>You are not waitlisted in any courses.</li>
         {% endif %}
     </ul>
 
-    <h2>Search Courses</h2>
-    <form method="post" action="{%url 'courseEnroll:search_courses'%}">
+    <form method="post" action="{% url 'courseEnroll:search_courses' %}">
         {% csrf_token %}
-        <input type="search" name="search_courses"  placeholder="Enter Course ID" required>
-        <button type="submit" class="button">Search</button>
+        <input type="search" name="search_courses" placeholder="Enter Course ID" required>
+        <input type="hidden" name="action" id="formAction" value="waitlist">
+        <button type="submit" class="button" onclick="setAction('waitlist')">Waitlist into more Courses</button>
     </form>
+    <ul>
+        {% if waitlist_courses %}
+            {% for item in waitlist_courses %}
+                <li>
+                    <h2>{{ item.course.name }} ({{ item.course.course_id }})</h2>
+                    <strong>Instructor :</strong> {{ item.course.Instructor.name }}<br>  
+                    <strong>Description :</strong> {{ item.course.description }}<br>
+                    <strong>Credits :</strong> {{ item.course.credits }}<br> 
+                    <strong>Class Time :</strong> {{ item.course.start_time }} <a>--</a> {{ item.course.end_time }}<br>
+                    <strong>Created Time:</strong> {{ item.created_at }}
+                </li>
+            {% endfor %}
+        {% else %}
+            <li>You are not waitlisted in any courses.</li>
+        {% endif %}
+    </ul>
+    <button type="button" id="delete-course-btn" class="button" onclick="toggleDeleteForm()">Delete Courses</button>
+
+    <div class="delete-form" id="delete-form">
+        <h2>Select Courses to Delete</h2>
+        <form method="POST" action="{% url 'courseEnroll:delete_selected_courses' %}">
+            {% csrf_token %}
+            
+            {% if enrolled_courses %}
+                {% for course in enrolled_courses %}
+                    <div class="course-item">
+                        <input type="checkbox" name="selected_courses" value="{{ course.course_id }}">
+                        <label>{{ course.name }} ({{ course.credits }} credits)</label>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>You are not enrolled in any courses.</p>
+            {% endif %}
+            
+            <button type="submit" class="btn btn-danger">Delete Selected Courses</button>
+        </form>
+    </div>
+
+    <script>
+        function toggleDeleteForm() {
+            var deleteForm = document.getElementById('delete-form');
+            if (deleteForm.style.display === 'none' || deleteForm.style.display === '') {
+                deleteForm.style.display = 'block';
+            } else {
+                deleteForm.style.display = 'none';
+            }
+        }
+
+        function setAction(action) {
+            document.getElementById('formAction').value = action;
+        }
+    </script>
 </body>
 </html>

@@ -127,8 +127,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1','74.101.114.159']
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC' 
-
+TIME_ZONE = 'America/New_York'
 USE_I18N = True
 
 USE_TZ = True
