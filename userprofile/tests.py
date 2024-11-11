@@ -1,64 +1,87 @@
 from django.test import TestCase
-
-# Create your tests here.
-
-from django.db import models
 from django.contrib.auth.models import User
+from userprofile.models import StudentInfo, AdminInfo, DepartmentInfo, FacultyInfo, TA
+from courseEnroll.models import CourseInfo  # Assuming you have a CourseInfo model in courseEnroll app
 
-class StudentInfoCourseEnrolledTestModel(models.Model):
-    Edu_levels = [("Undergraduate", "Undergraduate"),
-                  ("Graduate", "Graduate"),
-                  ("PHD", "PHD")]
-    Schools = [("Tandon", "Tandon"),
-               ("Stern", "Stern"),
-               ("Tisch", "Tisch"),
-               ("Gallatin", "Gallatin")]
-    
-    N_id = models.CharField(max_length=9, primary_key=True)
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    Name = models.CharField(max_length=100)
-    email = models.EmailField(max_length=100)
-    Education_Level = models.CharField(max_length=50, choices=Edu_levels)
-    Phone_no = models.CharField(max_length=15)  
-    School = models.CharField(max_length=50, choices=Schools)
-    ta_course = models.ForeignKey('courseEnroll.CourseInfo', null=True, blank=True, related_name='test_tas', on_delete=models.SET_NULL)  # Use app label 'coursenroll'
-    is_ta = models.BooleanField(default=False)
-    course_enrolled = models.ManyToManyField('courseEnroll.CourseInfo', related_name='test_enrolled_students')  # Use app label 'coursenroll'
-    advisor = models.ForeignKey('AdminInfo', related_name='test_advising_students', on_delete=models.SET_NULL, null=True)
+class ModelsTestCase(TestCase):
 
-class AdminInfoTestModel(models.Model):
-    admin_id = models.CharField(max_length=9)
-    Name = models.CharField(max_length=100, blank=True, null=True)
-    email = models.EmailField()
-    phone_no = models.CharField(max_length=15)
+    def setUp(self):
+        # Create a user instance for StudentInfo
+        self.user = User.objects.create_user('john_doe', 'john@example.com', 'johnpassword')
 
-    def __str__(self):
-        return self.Name
+        # Create StudentInfo instance
+        self.student = StudentInfo.objects.create(
+            N_id="123456789",
+            user=self.user,
+            Name="John Doe",
+            email="john.doe@example.com",
+            Education_Level="Undergraduate",
+            Phone_no="123-456-7890",
+            School="Tandon",
+            is_ta=False  # Assuming 'is_ta' is required
+        )
 
-class DepartmentInfoTestModel(models.Model):
-    
-    department_id = models.CharField(max_length=8, primary_key=True)
-    name = models.CharField(default='CSE')
+        # Create AdminInfo instance
+        self.admin = AdminInfo.objects.create(
+            admin_id="987654321",
+            Name="Admin Name",
+            email="admin@example.com",
+            phone_no="987-654-3210"
+        )
 
-    def __str__(self):
-        return self.name 
+        # Create DepartmentInfo instance
+        self.department = DepartmentInfo.objects.create(
+            department_id="DEP001",
+            name="Computer Science"
+        )
 
+        # Create FacultyInfo instance
+        self.faculty = FacultyInfo.objects.create(
+            faculty_id="FAC123",
+            Name="Jane Doe",
+            email="jane.doe@example.com",
+            Phone_no="321-654-9870"
+        )
 
-class FacultyInfoTestModel(models.Model):
-    faculty_id = models.CharField(max_length=8, primary_key=True)
-    Name = models.CharField(max_length=100)
-    email = models.EmailField(max_length=100)
-    Phone_no = models.CharField(max_length=15)
-    ta_students = models.ManyToManyField(StudentInfoCourseEnrolledTestModel, through='TA', related_name='faculty_tas')
+        # Create CourseInfo instance with all required fields
+        self.course = CourseInfo.objects.create(
+            course_id="CSE101",
+            name="Introduction to Computer Science",
+            Department=self.department,
+            Instructor=self.faculty,
+            course_Capacity=30,
+            phd_course_capacity=5,
+            class_day='2023-09-01',
+            class_time='10:00:00',
+            description='An introductory course to computer science.',
+            credits=3.0
+        )
 
+        # Create TA instance
+        self.ta = TA.objects.create(
+            student=self.student,
+            course=self.course,
+            faculty=self.faculty
+        )
 
-    def __str__(self):
-        return self.Name 
+    def test_student_creation(self):
+        self.assertIsInstance(self.student, StudentInfo)
+        self.assertEqual(self.student.user.username, 'john_doe')
 
-class TATestModel(models.Model):
-    student = models.ForeignKey(StudentInfoCourseEnrolledTestModel, on_delete=models.CASCADE)
-    course = models.ForeignKey('courseEnroll.CourseInfo', on_delete=models.CASCADE)  
-    faculty = models.ForeignKey(FacultyInfoTestModel, on_delete=models.CASCADE)
+    def test_admin_creation(self):
+        self.assertIsInstance(self.admin, AdminInfo)
+        self.assertEqual(self.admin.Name, "Admin Name")
 
-    class Meta:
-        unique_together = ('student', 'course')
+    def test_department_creation(self):
+        self.assertIsInstance(self.department, DepartmentInfo)
+        self.assertEqual(self.department.name, "Computer Science")
+
+    def test_faculty_creation(self):
+        self.assertIsInstance(self.faculty, FacultyInfo)
+        self.assertEqual(self.faculty.Name, "Jane Doe")
+
+    def test_ta_creation(self):
+        self.assertIsInstance(self.ta, TA)
+        self.assertEqual(self.ta.student.Name, "John Doe")
+        self.assertEqual(self.ta.course.name, "Introduction to Computer Science")
+        self.assertEqual(self.ta.faculty.Name, "Jane Doe")
