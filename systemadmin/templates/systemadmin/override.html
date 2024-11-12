@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Override Forms</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f9f9f9; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        h2 { text-align: center; color: #333; }
+        .filters, .dashboard-button { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .filters label, .filters select, .filters input { margin: 0 10px; padding: 8px; font-size: 1rem; }
+
+        /* Enhanced Dashboard Button */
+        .dashboard-button button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .dashboard-button button:hover { background-color: #45a049; }
+
+        /* Table */
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px;
+            table-layout: fixed; 
+        }
+        th, td { 
+            border: 1px solid #ddd; 
+            padding: 10px; 
+            text-align: left; 
+            font-size: 1rem; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis;
+        }
+        th { background-color: #4CAF50; color: white; }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .pagination button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 0 4px;
+            cursor: pointer;
+        }
+        .pagination button.active { background-color: #a07845; }
+
+        /* Expandable Details */
+        .details { display: none; background-color: #f1f1f1; padding: 10px; margin-top: 5px; border-left: 4px solid #4CAF50; }
+        .expand-button { cursor: pointer; color: #4CAF50; font-weight: bold; }
+
+        /* Action Buttons */
+        .action-buttons button {
+            margin-top: 10px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            color: white;
+        }
+        .approve { background-color: #4CAF50; }
+        .reject { background-color: #f44336; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Override Forms</h2>
+
+        <!-- Back to Dashboard Button -->
+        <div class="dashboard-button">
+            <form action="{% url 'systemadmin:dashboard' %}" method="get">
+                <button type="submit">⬅ Back to Dashboard</button>
+            </form>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <div>
+                <label for="status">Status:</label>
+                <select id="status" onchange="applyFilters()">
+                    <option value="All">All</option>
+                    <option value="Pending" selected>Pending</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Denied">Denied</option>
+                </select>
+            </div>
+            <div>
+                <label for="department">Department:</label>
+                <select id="department" onchange="applyFilters()">
+                    <option value="All">All</option>
+                    <option value="Computer Science">Computer Science</option>
+                    <option value="Mechanical Engineering">Mechanical Engineering</option>
+                    <option value="Theatre">Theatre</option>
+                </select>
+            </div>
+            <div>
+                <label for="studentId">Student ID:</label>
+                <input type="text" id="studentId" placeholder="Enter Student ID" oninput="applyFilters()">
+            </div>
+            <div>
+                <label for="sort">Sort by:</label>
+                <select id="sort" onchange="applyFilters()">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Results Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 10%;">Form ID</th>
+                    <th style="width: 15%;">Date</th>
+                    <th style="width: 20%;">Course Code</th>
+                    <th style="width: 20%;">Department</th>
+                    <th style="width: 10%;">Status</th>
+                    <th style="width: 15%;">Student ID</th>
+                    <th style="width: 5%;">Expand</th>
+                </tr>
+            </thead>
+            <tbody id="overrideTable">
+                <!-- Rows will be added here by JavaScript -->
+            </tbody>
+        </table>
+
+        <!-- Pagination Controls -->
+        <div class="pagination" id="paginationControls"></div>
+    </div>
+
+    <script>
+        const overrideForms = Array.from({ length: 30 }, (_, i) => {
+            const departments = ["Computer Science", "Mechanical Engineering", "Theatre"];
+            const statusOptions = ["Pending", "Approved", "Denied"];
+            const department = departments[i % 3];
+            const courseCodePrefix = department === "Computer Science" ? "CS-GY" : department === "Mechanical Engineering" ? "ME-GY" : "TH-GY";
+
+            return {
+                formId: i + 1,
+                date: new Date(Date.now() - i * 86400000).toLocaleDateString(),
+                courseCode: `${courseCodePrefix}${String(i + 101).padStart(3, '0')}`,
+                department: department,
+                status: statusOptions[i % 3],
+                studentName: `Student ${i + 1}`,
+                studentId: `S${i + 1000}`,
+                explanation: `Explanation for override request ${i + 1}`
+            };
+        });
+
+        const itemsPerPage = 10;
+        let currentPage = 1;
+
+        function applyFilters() {
+            const status = document.getElementById('status').value;
+            const sortOption = document.getElementById('sort').value;
+            const department = document.getElementById('department').value;
+            const studentIdInput = document.getElementById('studentId').value;
+
+            let filteredForms = overrideForms.filter(form => 
+                (status === "All" || form.status === status) &&
+                (department === "All" || form.department === department) &&
+                (studentIdInput.length < 3 || form.studentId.includes(studentIdInput))
+            );
+
+            filteredForms.sort((a, b) => 
+                sortOption === "newest" 
+                ? new Date(b.date) - new Date(a.date) 
+                : new Date(a.date) - new Date(b.date)
+            );
+
+            currentPage = 1;
+            displayForms(filteredForms);
+            setupPagination(filteredForms);
+        }
+
+        function displayForms(formsToDisplay) {
+            const tableBody = document.getElementById('overrideTable');
+            tableBody.innerHTML = '';
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageItems = formsToDisplay.slice(startIndex, endIndex);
+
+            pageItems.forEach(form => {
+                const row = `<tr>
+                    <td>${form.formId}</td>
+                    <td>${form.date}</td>
+                    <td>${form.courseCode}</td>
+                    <td>${form.department}</td>
+                    <td>${form.status}</td>
+                    <td>${form.studentId}</td>
+                    <td><span class="expand-button" onclick="toggleDetails(${form.formId})">⬇</span></td>
+                </tr>
+                <tr id="details-${form.formId}" class="details">
+                    <td colspan="7">
+                        <strong>Student Name:</strong> ${form.studentName}<br>
+                        <strong>Student ID:</strong> ${form.studentId}<br>
+                        <strong>Explanation:</strong> ${form.explanation}<br>
+                        <div class="action-buttons">
+                            <button class="approve" onclick="processRequest(${form.formId}, 'approved')">Approve</button>
+                            <button class="reject" onclick="processRequest(${form.formId}, 'rejected')">Reject</button>
+                        </div>
+                    </td>
+                </tr>`;
+                tableBody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        function toggleDetails(formId) {
+            const detailsRow = document.getElementById(`details-${formId}`);
+            detailsRow.style.display = detailsRow.style.display === 'table-row' ? 'none' : 'table-row';
+        }
+
+        function setupPagination(forms) {
+            const paginationControls = document.getElementById('paginationControls');
+            paginationControls.innerHTML = '';
+
+            const totalPages = Math.ceil(forms.length / itemsPerPage);
+
+            for (let i = 1; i <= totalPages; i++) {
+                const button = document.createElement('button');
+                button.textContent = i;
+                button.className = currentPage === i ? 'active' : '';
+                button.addEventListener('click', () => {
+                    currentPage = i;
+                    displayForms(forms);
+                    setupPagination(forms);
+                });
+                paginationControls.appendChild(button);
+            }
+        }
+
+        function processRequest(formId, action) {
+            alert(`Form ID ${formId} has been ${action}.`);
+        }
+
+        applyFilters();
+    </script>
+</body>
+</html>

@@ -20,6 +20,18 @@ def admin_dashboard(request):
     
     return render(request, 'systemadmin/admin_dashboard.html', {'departments': departments, 'courses': courses})
 
+@login_required
+@user_passes_test(admin_required)
+def prereg(request):
+    
+    return render(request, 'systemadmin/preregistration.html')
+
+@login_required
+@user_passes_test(admin_required)
+def override(request):
+    
+    return render(request, 'systemadmin/override.html')
+
 def logout_request(request):
     logout(request)
     return redirect('userprofile:login') 
