@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pre-Registration Analytics</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f9f9f9; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        h2 { text-align: center; color: #333; }
+        .filters, .dashboard-button { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .filters label, .filters select { margin: 0 10px; padding: 8px; font-size: 1rem; }
+        
+        /* Enhanced Dashboard Button */
+        .dashboard-button {
+            display: flex;
+            justify-content: flex-start;
+        }
+        .dashboard-button button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .dashboard-button button:hover {
+            background-color: #45a049;
+        }
+
+        /* Responsive Table */
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px;
+            table-layout: fixed; 
+        }
+        th, td { 
+            border: 1px solid #ddd; 
+            padding: 10px; 
+            text-align: left; 
+            font-size: 1rem; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis;
+        }
+        th { background-color: #4CAF50; color: white; }
+        
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .pagination button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 0 4px;
+            cursor: pointer;
+        }
+        .pagination button.active { background-color: #a07845; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Pre-Registration Analytics</h2>
+
+        <!-- Back to Dashboard Button -->
+        <div class="dashboard-button">
+            <form action="{% url 'systemadmin:dashboard' %}" method="get">
+                <button type="submit">⬅ Back to Dashboard</button>
+            </form>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <div>
+                <label for="department">Department:</label>
+                <select id="department" onchange="applyFilters()">
+                    <option value="All">All</option>
+                    <option value="Computer Science">Computer Science</option>
+                    <option value="Mechanical Engineering">Mechanical Engineering</option>
+                    <option value="Theatre">Theatre</option>
+                </select>
+            </div>
+            <div>
+                <label for="sort">Sort by:</label>
+                <select id="sort" onchange="applyFilters()">
+                    <option value="requests-desc">Requests (descending)</option>
+                    <option value="requests-asc">Requests (ascending)</option>
+                    <option value="courseCode-asc">Course Code</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Results Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Course Code</th>
+                    <th style="width: 35%;">Course Name</th>
+                    <th style="width: 20%;">Department</th>
+                    <th style="width: 10%;">In Dept. Requests</th>
+                    <th style="width: 10%;">Out Dept. Requests</th>
+                    <th style="width: 10%;">Requests</th>
+                </tr>
+            </thead>
+            <tbody id="courseTable">
+                <!-- Rows will be added here by JavaScript -->
+            </tbody>
+        </table>
+
+        <!-- Pagination Controls -->
+        <div class="pagination" id="paginationControls"></div>
+    </div>
+
+    <script>
+        // Mock data with 30 sample courses
+        const courses = Array.from({ length: 30 }, (_, i) => {
+            const departmentOptions = ["Computer Science", "Mechanical Engineering", "Theatre"];
+            const department = departmentOptions[i % 3];
+            const courseCodePrefix = department === "Computer Science" ? "CS-GY" : department === "Mechanical Engineering" ? "ME-GY" : "TH-GY";
+            const in_department_requests = Math.floor(Math.random() * 100);
+            const out_department_requests = Math.floor(Math.random() * 50);
+
+            return {
+                courseCode: `${courseCodePrefix}${String(i + 101).padStart(3, '0')}`,
+                courseName: `Course ${i + 1}`,
+                department: department,
+                in_department_requests: in_department_requests,
+                out_department_requests: out_department_requests,
+                requests: in_department_requests + out_department_requests,
+            };
+
+        });
+
+        const itemsPerPage = 20;
+        let currentPage = 1;
+
+        // Function to apply filters and sorting
+        function applyFilters() {
+            const department = document.getElementById('department').value;
+            const sortOption = document.getElementById('sort').value;
+
+            // Filter by department
+            let filteredCourses = courses.filter(course => department === "All" || course.department === department);
+
+            // Sort based on selected option
+            if (sortOption === "requests-desc") {
+                filteredCourses.sort((a, b) => b.requests - a.requests);
+            } else if (sortOption === "requests-asc") {
+                filteredCourses.sort((a, b) => a.requests - b.requests);
+            } else if (sortOption === "courseCode-asc") {
+                filteredCourses.sort((a, b) => a.courseCode.localeCompare(b.courseCode));
+            }
+
+            // Update pagination and display
+            currentPage = 1;
+            displayCourses(filteredCourses);
+            setupPagination(filteredCourses);
+        }
+
+        // Function to display courses for the current page
+        function displayCourses(coursesToDisplay) {
+            const tableBody = document.getElementById('courseTable');
+            tableBody.innerHTML = ''; // Clear previous rows
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageItems = coursesToDisplay.slice(startIndex, endIndex);
+
+            pageItems.forEach(course => {
+                const row = `<tr>
+                    <td>${course.courseCode}</td>
+                    <td>${course.courseName}</td>
+                    <td>${course.department}</td>
+                    <td>${course.in_department_requests}</td>
+                    <td>${course.out_department_requests}</td>
+                    <td>${course.requests}</td>
+                </tr>`;
+                tableBody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        // Function to set up pagination controls
+        function setupPagination(coursesToDisplay) {
+            const paginationControls = document.getElementById('paginationControls');
+            paginationControls.innerHTML = '';
+
+            const totalPages = Math.ceil(coursesToDisplay.length / itemsPerPage);
+
+            for (let i = 1; i <= totalPages; i++) {
+                const button = document.createElement('button');
+                button.textContent = i;
+                button.classList.toggle('active', i === currentPage);
+                button.addEventListener('click', () => {
+                    currentPage = i;
+                    displayCourses(coursesToDisplay);
+                    setupPagination(coursesToDisplay);
+                });
+                paginationControls.appendChild(button);
+            }
+        }
+
+        // Initial display of courses
+        applyFilters();
+    </script>
+</body>
+</html>
