@@ -1,11 +1,18 @@
 from django import forms
-from .models import CourseInfo
+from .models import CourseInfo,Enrollment
 
+
+# Corrected fields list in CourseForm
 class CourseForm(forms.ModelForm):
     class Meta:
         model = CourseInfo
-        fields = ['name', 'Department', 'Instructor', 'course_Capacity', 'phd_course_capacity', 'class_days', 
-                  'start_time', 'end_time', 'description', 'to_waitlist', 'points_assigned', 'credits']
+        fields = [
+            'name', 'Department', 'Instructor', 
+            'undergrad_capacity', 'grad_Capacity', 
+            'phd_course_capacity', 'class_days', 
+            'start_time', 'end_time', 'description', 
+            'to_waitlist', 'points_assigned', 'credits'
+        ]
 
     class_days = forms.ChoiceField(
         choices=[
@@ -23,3 +30,8 @@ class CourseForm(forms.ModelForm):
     
     start_time = forms.TimeField(widget=forms.TimeInput(format='%H:%M'), required=False)
     end_time = forms.TimeField(widget=forms.TimeInput(format='%H:%M'), required=False)
+
+class EnrollmentForm(forms.ModelForm):
+    class Meta:
+        model = Enrollment
+        fields = ['student', 'course', 'points_assigned', 'is_waitlisted']

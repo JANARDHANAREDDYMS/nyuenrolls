@@ -43,6 +43,10 @@ class Enrollment(models.Model):
     is_waitlisted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        if not self.is_waitlisted and self.course.enrollments.count() >= self.course.undergrad_capacity + self.course.grad_Capacity + self.course.phd_course_capacity:
+            self.is_waitlisted = True
+        super().save(*args, **kwargs)
     class Meta:
         unique_together = ('student', 'course')
     
