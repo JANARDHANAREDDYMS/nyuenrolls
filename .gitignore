@@ -39,4 +39,15 @@ env/
 # Pipenv files
 Pipfile.lock
 
+# Ignore all compiled Python files
+*.pyc
+__pycache__/
+
+# Ignore Django migrations cache
+**/migrations/__pycache__/
+
+# If you have a specific structure, you can add specific folders
+courseEnroll/__pycache__/
+project/__pycache__/
+userprofile/__pycache__/
 
