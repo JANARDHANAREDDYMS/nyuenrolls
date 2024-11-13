@@ -3,11 +3,18 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Django cache and migration files
+**/__pycache__/
+**/migrations/__pycache__/
+*.pyc
+*.pyo
+
 # Django stuff:
 *.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+*/migrations/
 
 # If you're using PostgreSQL:
 *.pgsql
@@ -33,21 +40,6 @@ ENV/
 env/
 .venv/
 .Python
-*.pyc
-*.pyo
 
 # Pipenv files
 Pipfile.lock
-
-# Ignore all compiled Python files
-*.pyc
-__pycache__/
-
-# Ignore Django migrations cache
-**/migrations/__pycache__/
-
-# If you have a specific structure, you can add specific folders
-courseEnroll/__pycache__/
-project/__pycache__/
-userprofile/__pycache__/
-
