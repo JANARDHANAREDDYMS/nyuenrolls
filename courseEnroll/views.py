@@ -97,7 +97,7 @@ def select_courses(request):
                     messages.warning(request, f"You are already enrolled in {course.name}.")
                     continue
                 if total_credits + credit <= 9:
-                    if capacity > 0:
+                    if course.grad_Capacity > 0:
                         Enrollment.objects.create(student=request.user.studentinfo, course=course, is_waitlisted=False)
                         request.user.studentinfo.course_enrolled.add(course)
                         total_credits += credit
