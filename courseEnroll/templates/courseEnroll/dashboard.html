@@ -100,10 +100,10 @@
             {% csrf_token %}
             
             {% if enrolled_courses %}
-                {% for course in enrolled_courses %}
+                {% for item in enrolled_courses %}
                     <div class="course-item">
                         <input type="checkbox" name="selected_courses" value="{{ course.course_id }}">
-                        <label>{{ course.name }} ({{ course.credits }} credits)</label>
+                        <label><strong>COurse Name:{{ item.course.name }} </strong> ({{ item.course.credits }} credits)</label>
                     </div>
                 {% endfor %}
             {% else %}

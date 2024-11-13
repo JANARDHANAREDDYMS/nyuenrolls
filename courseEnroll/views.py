@@ -59,9 +59,7 @@ def select_courses(request):
             course_school = course.school
             credit = course.credits
 
-            if course_school != student_school:
-                messages.error(request, f"The course {course.name} is not in your school. Please contact your advisor.")
-                continue
+            
 
             if edu_level == "Undergraduate":
                 capacity = course.undergrad_capacity

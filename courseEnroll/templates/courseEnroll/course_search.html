@@ -43,6 +43,8 @@
                     <strong>Class Time:</strong> {{ course.start_time }} - {{ course.end_time }}<br>
                     <strong>Capacity:</strong> {{ course.grad_Capacity }}<br>
 
+                    <strong>School:</strong> {{ course.school}}<br>
+
                     {% if action == 'waitlist' %}
                         <label>
                             <input type="checkbox" name="waitlist_{{ course.course_id }}">
