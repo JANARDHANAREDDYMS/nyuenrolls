@@ -3,7 +3,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from userprofile.models import DepartmentInfo,FacultyInfo
 from django.http import HttpResponse
-from courseEnroll.models import CourseInfo
+from courseEnroll.models import CourseInfo, OverrideForm
 from datetime import date,datetime
 from django.contrib import messages
 
@@ -29,8 +29,22 @@ def prereg(request):
 @login_required
 @user_passes_test(admin_required)
 def override(request):
-    
-    return render(request, 'systemadmin/override.html')
+    override_forms = OverrideForm.objects.all()
+    depts = DepartmentInfo.objects.all()
+    return render(request, 'systemadmin/override.html', { 'override_forms': override_forms, 'depts': depts })
+
+def modify_override(request):
+    if request.method == 'POST':
+        status = request.POST.get('action')
+        formId = request.POST.get('formId')
+        print("status=" + str(status))
+        print("formId=" + str(formId))
+        override_form = get_object_or_404(OverrideForm, form_id=formId)
+        override_form.status = status
+        override_form.save()
+
+    return redirect('systemadmin:override')
+
 
 def logout_request(request):
     logout(request)
