@@ -129,13 +129,20 @@ def delete_selected_courses(request):
         if selected_courses:
             for course_id in selected_courses:
                 try:
-                    course = CourseInfo.objects.get(course_id=course_id)
-                    Enrollment.objects.filter(student=request.user.studentinfo, course=course).delete()
-                    request.user.studentinfo.course_enrolled.remove(course)
-                except CourseInfo.DoesNotExist:
-                    pass
-    return redirect('courseEnroll:dashboard')
+                    # Retrieve the Enrollment instance first
+                    enrollment = Enrollment.objects.get(student=request.user.studentinfo, course__course_id=course_id)
+                    
+                    # Delete the enrollment entry (removes the student-course relationship)
+                    enrollment.delete()
 
+                    # If you want to ensure that the student is removed from the course's enrolled students, remove the course as well
+                    # This is for a better sync in case any other places depend on `course_enrolled`
+                    request.user.studentinfo.course_enrolled.remove(enrollment.course)
+
+                except Enrollment.DoesNotExist:
+                    pass  # If no enrollment found, simply skip the course
+
+    return redirect('courseEnroll:dashboard')
 
 @login_required
 def update_enrollment(request):
