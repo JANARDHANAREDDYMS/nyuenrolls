@@ -56,7 +56,12 @@ def select_courses(request):
 
         for course_id in selected_courses:
             course = CourseInfo.objects.get(course_id=course_id)
+            course_school = course.school
             credit = course.credits
+
+            if course_school != student_school:
+                messages.error(request, f"The course {course.name} is not in your school. Please contact your advisor.")
+                continue
 
             if edu_level == "Undergraduate":
                 capacity = course.undergrad_capacity
@@ -77,12 +82,16 @@ def select_courses(request):
 
 
             if action == 'waitlist' and not is_waitlisted:
-                if not Enrollment.objects.filter(student=request.user.studentinfo, course=course, is_waitlisted=False).exists():
-                    Enrollment.objects.create(student=request.user.studentinfo, course=course, is_waitlisted=True)
-                    request.user.studentinfo.course_enrolled.add(course)
-                    messages.success(request, f"You have been added to the waitlist for {course.name}.")
+                if course.capacity ==0:
+                    if not Enrollment.objects.filter(student=request.user.studentinfo, course=course, is_waitlisted=False).exists():
+                        Enrollment.objects.create(student=request.user.studentinfo, course=course, is_waitlisted=True)
+                        request.user.studentinfo.course_enrolled.add(course)
+                        messages.success(request, f"You have been added to the waitlist for {course.name}.")
+                    else:
+                        messages.error(request, f"You are already enrolled in {course.name}.")
                 else:
-                    messages.error(request, f"You are already enrolled in {course.name}.")
+                    messages.error(request, f"There are open spots available in {course.name}.")
+
             elif action == 'enroll':
                 if (Enrollment.objects.filter(student=request.user.studentinfo, course=course, is_waitlisted=False).exists() 
                 or course in request.user.studentinfo.course_enrolled.all()):
@@ -148,3 +157,14 @@ def update_enrollment(request):
                 request.user.studentinfo.course_enrolled.add(enrollment.course)
 
     return redirect('courseEnroll:dashboard')
+
+
+def course_enrollment(request, course_id):
+    course = CourseInfo.objects.get(course_id=course_id)
+    enrollments_records= course.enrollments.values('student__Name', 'created_at', 'points_assigned','is_waitlisted').order_by('points_assigned')
+    waitlist_record = enrollments_records.filter(is_waitlisted=True)
+    context = {
+        'course': course,
+        'enrollments': waitlist_record
+    }
+    return render(request, 'courseEnroll/course_enrollment.html', context)

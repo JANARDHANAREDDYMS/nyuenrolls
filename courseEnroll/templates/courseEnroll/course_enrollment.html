@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <title>Search</title>
+</head>
+<body>
+    <h2>Enrollments for {{ course.name }}</h2>
+<ul>
+    {% for enrollment in enrollments %}
+        <li>
+            <strong>Student:</strong> {{ enrollment.student__Name }}<br>
+            <strong>Timestamp:</strong> {{ enrollment.created_at }}<br>
+            <strong>Points Assigned:</strong> {{ enrollment.points_assigned }}
+        </li>
+    {% endfor %}
+</ul>
+</body>
+</html>

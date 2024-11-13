@@ -6,6 +6,16 @@
 <body>
     <a href="{% url 'userprofile:user_profile' %}" class="button">Go to User Profile</a>
 
+    <form method="get" action="{% url 'courseEnroll:search_courses' %}">
+        <label for="school">Filter by School:</label>
+        <select id="school" name="school" onchange="this.form.submit()">
+            <option value="">All Schools</option>
+            {% for school in schools %}
+                <option value="{{ school.id }}" {% if school.id == selected_school %}selected{% endif %}>{{ school.name }}</option>
+            {% endfor %}
+        </select>
+    </form>
+
     {% if search_courses %}
         <h2>You searched for "{{ search_courses }}"</h2>
         <h2>Matched Courses</h2>
@@ -23,15 +33,19 @@
                         <input type="checkbox" name="selected_courses" value="{{ course.course_id }}">
                         Select Course
                     </label>
-                    <h3>{{ course.name }} ({{ course.course_id }})</h3>
+                    <h3>
+                        <a href="{% url 'courseEnroll:course_enrollment' course.course_id %}">
+                            {{ course.name }} ({{ course.course_id }})
+                        </a>
+                    </h3>
                     <strong>Instructor:</strong> {{ course.Instructor.Name }}<br>
                     <strong>Description:</strong> {{ course.description }}<br>
                     <strong>Class Time:</strong> {{ course.start_time }} - {{ course.end_time }}<br>
-                    <strong>Capacity:</strong>{{course.grad_Capacity}}<br>
+                    <strong>Capacity:</strong> {{ course.grad_Capacity }}<br>
 
                     {% if action == 'waitlist' %}
                         <label>
-                            <input type="checkbox" name="waitlist_{{ course.course_id }}" >
+                            <input type="checkbox" name="waitlist_{{ course.course_id }}">
                             Waitlist
                         </label>
                         <br>
@@ -46,10 +60,9 @@
             {% endfor %}
             
             {% if action == "enroll" %}
-            <button type="submit" class="button" name="action" value="enroll">Enroll</button>
-            {% endif %}
-            {% if action == "waitlist" %}
-            <button type="submit" class="button" name="action" value="waitlist">Waitlist</button>
+                <button type="submit" class="button" name="action" value="enroll">Enroll</button>
+            {% elif action == "waitlist" %}
+                <button type="submit" class="button" name="action" value="waitlist">Waitlist</button>
             {% endif %}
         </form>
     {% else %}

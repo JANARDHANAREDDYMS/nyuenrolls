@@ -15,10 +15,8 @@ class CustomUserCreationForm(UserCreationForm):
         fields = ['username', 'email', 'password1', 'password2']  
 
     def save(self, commit=True):
-        # Save the user first
         user = super().save(commit=commit)
         
-        # Ensure that the user is saved before creating the StudentInfo
         if commit:
             student_info = StudentInfo.objects.create(
                 user=user,  # Now we reference the saved user
