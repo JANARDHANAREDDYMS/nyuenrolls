@@ -218,8 +218,8 @@
     <div class="dashboard-container">
         <div class="dashboard-option" onclick="openModal()">Manage Courses</div>
         <div class="dashboard-option">Manage Student Enrollment</div>
-        <div class="dashboard-option">Manage Override Forms</div>
-        <div class="dashboard-option">See Preregistration Data</div>
+        <div class="dashboard-option" id="manage-override">Manage Override Forms</div>
+        <div class="dashboard-option" id="manage-prereg">See Preregistration Data</div>
     </div>
 
     <div class="logout">Logout</div>
@@ -296,6 +296,14 @@
     
 
     <script>
+        document.getElementById("manage-prereg").addEventListener("click", function() {
+            window.location.href = "{% url 'systemadmin:prereg' %}";
+        });
+
+        document.getElementById("manage-override").addEventListener("click", function() {
+            window.location.href = "{% url 'systemadmin:override' %}";
+        });
+
         document.querySelector('.logout').addEventListener('click', function() {
             window.location.href = "{% url 'userprofile:logout' %}";
         });

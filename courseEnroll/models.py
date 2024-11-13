@@ -34,6 +34,13 @@ class CourseInfo(models.Model):
     def __str__(self):
         return self.name
     
+    def to_dict(self):
+        return {
+            'course_code': self.course_code,
+            'department': self.department,
+            # Include other fields you need
+        }
+    
     waitlist_capacity = models.IntegerField(default=35)
 
 class Enrollment(models.Model):
@@ -48,3 +55,29 @@ class Enrollment(models.Model):
     
     def __str__(self):
         return f'{self.student.Name} enrolled in {self.course.name}'
+    
+class OverrideForm(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Approved', 'Approved'),
+        ('Rejected', 'Rejected')
+    ]
+
+    form_id = models.AutoField(primary_key=True)
+    date = models.DateField(default=timezone.now)
+    course_code = models.ForeignKey('courseEnroll.CourseInfo', on_delete=models.CASCADE, related_name='override_forms')
+    department = models.ForeignKey('userprofile.DepartmentInfo', on_delete=models.SET_NULL, null=True, related_name='override_forms')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    student = models.ForeignKey('userprofile.StudentInfo', on_delete=models.CASCADE, related_name='override_forms')
+    explanation = models.TextField()
+
+    def __str__(self):
+        return f"Override Form {self.form_id} - {self.course_code.name} - {self.status}"
+
+    @property
+    def student_name(self):
+        return self.student.Name
+    
+    @property
+    def student_id(self):
+        return self.student.N_id

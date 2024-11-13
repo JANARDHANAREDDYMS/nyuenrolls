@@ -99,24 +99,24 @@
                 </select>
             </div>
             <div>
-                <label for="department">Department:</label>
-                <select id="department" onchange="applyFilters()">
-                    <option value="All">All</option>
-                    <option value="Computer Science">Computer Science</option>
-                    <option value="Mechanical Engineering">Mechanical Engineering</option>
-                    <option value="Theatre">Theatre</option>
-                </select>
-            </div>
-            <div>
-                <label for="studentId">Student ID:</label>
-                <input type="text" id="studentId" placeholder="Enter Student ID" oninput="applyFilters()">
-            </div>
-            <div>
                 <label for="sort">Sort by:</label>
                 <select id="sort" onchange="applyFilters()">
                     <option value="newest">Newest First</option>
                     <option value="oldest">Oldest First</option>
                 </select>
+            </div>
+            <div>
+                <label for="department">Department:</label>
+                <select id="department" onchange="applyFilters()">
+                    <option value="All">All</option>
+                    {% for dept in depts %}
+                        <option value="{{dept.name}}">{{dept.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="studentId">Student ID:</label>
+                <input type="text" id="studentId" placeholder="Enter Student ID" oninput="applyFilters()">
             </div>
         </div>
 
@@ -138,28 +138,33 @@
             </tbody>
         </table>
 
+        <form id="signForm" name="sign" action="{% url 'systemadmin:modify_override' %}" method="POST" style="display: none;">
+            {% csrf_token %}
+            <input type="hidden" name="formId" id="formId">
+            <input type="hidden" name="action" id="action">
+        </form>
+
         <!-- Pagination Controls -->
         <div class="pagination" id="paginationControls"></div>
     </div>
 
     <script>
-        const overrideForms = Array.from({ length: 30 }, (_, i) => {
-            const departments = ["Computer Science", "Mechanical Engineering", "Theatre"];
-            const statusOptions = ["Pending", "Approved", "Denied"];
-            const department = departments[i % 3];
-            const courseCodePrefix = department === "Computer Science" ? "CS-GY" : department === "Mechanical Engineering" ? "ME-GY" : "TH-GY";
+        const overrideForms = [
+            {% for form in override_forms %}
+                {
+                    formId: '{{ form.form_id }}',
+                    date: '{{ form.date }}',
+                    courseCode: '{{ form.course_code }}',
+                    department: '{{ form.department }}',
+                    status: '{{ form.status }}',
+                    studentName: '{{ form.student_name }}',
+                    studentId: '{{ form.student_id }}',
+                    explanation: '{{ form.explanation }}'
+                },
+            {% endfor %}
+        ];
 
-            return {
-                formId: i + 1,
-                date: new Date(Date.now() - i * 86400000).toLocaleDateString(),
-                courseCode: `${courseCodePrefix}${String(i + 101).padStart(3, '0')}`,
-                department: department,
-                status: statusOptions[i % 3],
-                studentName: `Student ${i + 1}`,
-                studentId: `S${i + 1000}`,
-                explanation: `Explanation for override request ${i + 1}`
-            };
-        });
+        console.log(overrideForms)
 
         const itemsPerPage = 10;
         let currentPage = 1;
@@ -196,28 +201,33 @@
             const pageItems = formsToDisplay.slice(startIndex, endIndex);
 
             pageItems.forEach(form => {
-                const row = `<tr>
-                    <td>${form.formId}</td>
-                    <td>${form.date}</td>
-                    <td>${form.courseCode}</td>
-                    <td>${form.department}</td>
-                    <td>${form.status}</td>
-                    <td>${form.studentId}</td>
-                    <td><span class="expand-button" onclick="toggleDetails(${form.formId})">⬇</span></td>
-                </tr>
-                <tr id="details-${form.formId}" class="details">
-                    <td colspan="7">
-                        <strong>Student Name:</strong> ${form.studentName}<br>
-                        <strong>Student ID:</strong> ${form.studentId}<br>
-                        <strong>Explanation:</strong> ${form.explanation}<br>
-                        <div class="action-buttons">
-                            <button class="approve" onclick="processRequest(${form.formId}, 'approved')">Approve</button>
-                            <button class="reject" onclick="processRequest(${form.formId}, 'rejected')">Reject</button>
-                        </div>
-                    </td>
-                </tr>`;
-                tableBody.insertAdjacentHTML('beforeend', row);
-            });
+            // Determine if the buttons should be visible
+            const showButtons = form.status === "Pending" ? '' : 'style="display:none;"';
+
+            const row = `<tr>
+                <td>${form.formId}</td>
+                <td>${form.date}</td>
+                <td>${form.courseCode}</td>
+                <td>${form.department}</td>
+                <td>${form.status}</td>
+                <td>${form.studentId}</td>
+                <td><span class="expand-button" onclick="toggleDetails(${form.formId})">⬇</span></td>
+            </tr>
+            <tr id="details-${form.formId}" class="details">
+                <td colspan="7">
+                    <strong>Student Name:</strong> ${form.studentName}<br>
+                    <strong>Student ID:</strong> ${form.studentId}<br>
+                    <strong>Explanation:</strong> ${form.explanation}<br>
+                    <div class="action-buttons">
+                        <button class="approve" onclick="processRequest(${form.formId}, 'Approved')" ${showButtons}>Approve</button>
+                        <button class="reject" onclick="processRequest(${form.formId}, 'Rejected')" ${showButtons}>Reject</button>
+                    </div>
+                </td>
+            </tr>`;
+
+            tableBody.insertAdjacentHTML('beforeend', row);
+        });
+
         }
 
         function toggleDetails(formId) {
@@ -245,7 +255,11 @@
         }
 
         function processRequest(formId, action) {
-            alert(`Form ID ${formId} has been ${action}.`);
+            // Set the form input fields dynamically
+            document.getElementById('action').value = action;
+            document.getElementById('formId').value = formId;
+            // Submit the form
+            document.getElementById('signForm').submit();
         }
 
         applyFilters();
