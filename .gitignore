@@ -3,12 +3,17 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Ignore .pyc files and __pycache__ directories everywhere
+*.pyc
+**/__pycache__/
+
 # Django stuff:
 *.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
-*/migrations/
+*/migrations/**/__pycache__/
+*/migrations/*.pyc
 
 # If you're using PostgreSQL:
 *.pgsql
@@ -34,10 +39,6 @@ ENV/
 env/
 .venv/
 .Python
-*.pyc
-*.pyo
 
 # Pipenv files
 Pipfile.lock
-
-
