@@ -80,7 +80,11 @@
         {% if waitlist_courses %}
             {% for item in waitlist_courses %}
                 <li>
-                    <h2>{{ item.course.name }} ({{ item.course.course_id }})</h2>
+                    <h3>
+                        <a href="{% url 'courseEnroll:course_enrollment' item.course.course_id %}">
+                            {{ item.course.name }} ({{ item.course.course_id }})
+                        </a>
+                    </h3>
                     <strong>Instructor :</strong> {{ item.course.Instructor.name }}<br>  
                     <strong>Description :</strong> {{ item.course.description }}<br>
                     <strong>Credits :</strong> {{ item.course.credits }}<br> 
@@ -92,7 +96,7 @@
             <li>You are not waitlisted in any courses.</li>
         {% endif %}
     </ul>
-    <button type="button" id="delete-course-btn" class="button" onclick="toggleDeleteForm()">Delete Courses</button>
+    <!-- <button type="button" id="delete-course-btn" class="button" onclick="toggleDeleteForm()">Delete Courses</button> -->
 
     <!-- <div class="delete-form" id="delete-form">
         <h2>Select Courses to Delete</h2>

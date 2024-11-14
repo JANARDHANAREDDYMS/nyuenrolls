@@ -78,17 +78,15 @@ def select_courses(request):
                 messages.error(request, f"You are already waitlisted for the course: {course.name}.")
                 continue
 
-
             if action == 'waitlist' and not is_waitlisted:
-                if course.capacity ==0:
+                
                     if not Enrollment.objects.filter(student=request.user.studentinfo, course=course, is_waitlisted=False).exists():
                         Enrollment.objects.create(student=request.user.studentinfo, course=course, is_waitlisted=True)
                         request.user.studentinfo.course_enrolled.add(course)
                         messages.success(request, f"You have been added to the waitlist for {course.name}.")
                     else:
                         messages.error(request, f"You are already enrolled in {course.name}.")
-                else:
-                    messages.error(request, f"There are open spots available in {course.name}.")
+               
 
             elif action == 'enroll':
                 if (Enrollment.objects.filter(student=request.user.studentinfo, course=course, is_waitlisted=False).exists() 
