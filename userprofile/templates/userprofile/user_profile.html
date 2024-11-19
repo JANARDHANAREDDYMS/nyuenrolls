@@ -5,10 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <style>
+        body {
+            background-color: #f9f9f9; /* Light background for a clean look */
+            color: #333; /* Dark gray for text */
+        }
+        .header {
+            background-color: #57068c; /* NYU Violet */
+            color: white;
+            padding: 20px 0;
+        }
+        .header h2 {
+            margin: 0;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for cards */
+        }
+        .card-title {
+            color: #57068c; /* NYU Violet for emphasis */
+        }
+        .btn-primary {
+            background-color: #57068c; /* NYU Violet for primary buttons */
+            border-color: #57068c;
+        }
+        .btn-primary:hover {
+            background-color: #4b007d; /* Slightly darker violet for hover effect */
+            border-color: #4b007d;
+        }
+        .btn-danger {
+            background-color: #d9534f; /* Red for logout button */
+            border-color: #d9534f;
+        }
+        .btn-danger:hover {
+            background-color: #c9302c;
+            border-color: #c9302c;
+        }
+        footer {
+            margin-top: 30px;
+            padding: 10px 0;
+            background-color: #57068c;
+            color: white;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
+    <header class="header text-center">
+        <h2>Welcome to Your Dashboard, {{ student_info.Name }}</h2>
+    </header>
     <div class="container mt-5">
-        <h2 class="text-center">Welcome to Your Dashboard, {{ student_info.Name }}</h2>
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Profile Information</h5>
@@ -21,14 +68,20 @@
                 </ul>
             </div>
         </div>
-        <a href="{% url 'courseEnroll:dashboard' %}" class="btn btn-primary">Go to Dashboard</a>
-        
+
+        <div class="mt-4 text-center">
+            <a href="{% url 'courseEnroll:dashboard' %}" class="btn btn-primary btn-lg">Go to Dashboard</a>
+        </div>
+
         <div class="text-center mt-4">
-            <a href="{% url 'userprofile:logout' %}" class="btn btn-danger">Logout</a>
+            <a href="{% url 'userprofile:logout' %}" class="btn btn-danger btn-lg">Logout</a>
         </div>
     </div>
-    
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rTGo60E7D/7vV9I5B/Zb1pmh8n0GcI3b0c1f49+rD+47B4y8Qp" crossorigin="anonymous"></script>
+    <footer>
+        <p>&copy; 2024 NYU ENROLL</p>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0R1TGo60E7D/7vV9I5B/Zb1pmh8n0GcI3b0c1f49+rD+47B4y8Qp" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-JZmkY0kJ7p1oLqzW3C74w0aMZBj5O4H8AiLhoQ5Wk8Erqq9eW2pP5ipdM00gxB5R" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuE+Iew0Q2y4Fg4CZlk+q6CgtxNQ9Hc7dZpG6zW82M1v6wn5LRH1hG2hbz9" crossorigin="anonymous"></script>
 </body>

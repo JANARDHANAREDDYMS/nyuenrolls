@@ -6,183 +6,190 @@
     <title>Dashboard</title>
     <style>
         body {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
             font-family: Arial, sans-serif;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff; /* Neutral Background */
+            color: #2c2c2c; /* Dark Text */
         }
-        .button {
-            margin-bottom: 20px;
-            padding: 10px 15px;
-            background-color: #007BFF;
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #57068c; /* NYU Violet */
             color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            padding: 10px 20px;
         }
-        .button:hover {
-            background-color: #0056b3;
+        header img {
+            height: 50px;
         }
-        .course-item {
-            margin: 10px 0;
+        header a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
         }
-        .form-section {
-            display: none;
-            margin-top: 20px;
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff; /* White Background */
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #57068c; /* NYU Violet */
         }
         ul {
-            list-style-type: none;
+            list-style: none;
             padding: 0;
+        }
+        li {
+            margin: 10px 0;
+            padding: 15px;
+            background-color: #f4f4f4; /* Light Gray */
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        li h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #57068c; /* NYU Violet */
+        }
+        li p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .button {
+            display: inline-block;
+            margin: 10px 0;
+            padding: 12px 20px;
+            background-color: #57068c; /* NYU Violet */
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .button:hover {
+            background-color: #4b007d; /* Deep Violet Hover */
+        }
+        form {
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        input[type="search"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        footer {
+            text-align: center;
+            padding: 10px 0;
+            margin-top: 20px;
+            background-color: #57068c; /* NYU Violet */
+            color: white;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            .button {
+                padding: 10px;
+                font-size: 12px;
+            }
+            h1, h2 {
+                font-size: 18px;
+            }
+            input[type="search"] {
+                padding: 8px;
+            }
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            header img {
+                margin-bottom: 10px;
+            }
         }
     </style>
 </head>
 <body>
-    <a href="{% url 'userprofile:user_profile' %}" class="button">Go to User Profile</a>
+    <header>
+        <img src="NYU-Logo.png" alt="NYU Logo">
+        <a href="{% url 'userprofile:user_profile' %}">Go to User Profile</a>
+        <p align="left">NYU ENROLLS</p>
+    </header>
+    <div class="container">
+        <h1>Welcome, {{ student_info.Name }}</h1>
 
-    <h1>Welcome, {{ student_info.Name }} ({{ student_info.N_id }})</h1>
-    
-    {% if inconsistencies %}
-    <h2>Data Inconsistencies Found</h2>
-    <ul>
-        {% for student_id, details in inconsistencies.items %}
-            <li>
-                <strong>Student ID:</strong> {{ student_id }}<br>
-                <strong>Courses in `course_enrolled` but not in `Enrollment`:</strong>
-                {% if details.difference.in_course_enrolled_not_in_enrollments %}
-                    <ul>
-                        {% for course in details.difference.in_course_enrolled_not_in_enrollments %}
-                            <li>{{ course_id }} - {{ course.name }}</li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    None
-                {% endif %}
-                <strong>Courses in `Enrollment` but not in `course_enrolled`:</strong>
-                {% if details.difference.in_enrollments_not_in_course_enrolled %}
-                    <ul>
-                        {% for course in details.difference.in_enrollments_not_in_course_enrolled %}
-                            <li>{{ course_id }} - {{ course.name }}</li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    None
-                {% endif %}
-            </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>No inconsistencies found. All data is consistent.</p>
-    {% endif %}
-    
-    {% if messages %}
-    <script>
-        {% for message in messages %}
-            alert("{{ message }}");
-        {% endfor %}
-    </script>
-    {% endif %}
-
-    <form method="post" action="{% url 'userprofile:logout' %}">
-        {% csrf_token %}
-        <button type="submit" class="button">Logout</button>
-    </form>
-
-    <h2>Your Enrolled Courses</h2>
-    <form method="post" action="{% url 'courseEnroll:search_courses' %}">
-        {% csrf_token %}
-        <input type="search" name="search_courses" placeholder="Enter Course ID" required>
-        <button type="submit" class="button">Enroll into More Courses</button>
-    </form>
-
-    <ul>
-        {% if enrolled_courses %}
-            {% for item in enrolled_courses %}
-                <li>
-                    <h3>{{ item.course.name }} ({{ item.course.course_id }})</h3>
-                    <strong>Instructor:</strong> {{ item.course.Instructor.Name }}<br>
-                    <strong>Description:</strong> {{ item.course.description }}<br>
-                    <strong>Credits:</strong> {{ item.course.credits }}<br>
-                    <strong>Class Time:</strong> {{ item.course.start_time }} – {{ item.course.end_time }}<br>
-                </li>
+        {% if messages %}
+        <script type="text/JavaScript">
+            {% for message in messages %}
+                alert("{{ message }}");
             {% endfor %}
-        {% else %}
-            <p>You are not enrolled in any courses.</p>
+        </script>
         {% endif %}
-    </ul>
 
-    <h2>Waitlist</h2>
-    <form method="post" action="{% url 'courseEnroll:search_courses' %}">
-        {% csrf_token %}
-        <input type="search" name="search_courses" placeholder="Enter Course ID" required>
-        <button type="submit" class="button">Waitlist into More Courses</button>
-    </form>
-
-    <ul>
-        {% if waitlist_courses %}
-            {% for item in waitlist_courses %}
-                <li>
-                    <h3>{{ item.course.name }} ({{ item.course.course_id }})</h3>
-                    <strong>Instructor:</strong> {{ item.course.Instructor.Name }}<br>
-                    <strong>Description:</strong> {{ item.course.description }}<br>
-                    <strong>Credits:</strong> {{ item.course.credits }}<br>
-                    <strong>Class Time:</strong> {{ item.course.start_time }} – {{ item.course.end_time }}<br>
-                    <strong>Created Time:</strong> {{ item.created_at }}
-                </li>
-            {% endfor %}
-        {% else %}
-            <p>You are not waitlisted in any courses.</p>
-        {% endif %}
-    </ul>
-
-    <button type="button" class="button" onclick="toggleForm('delete-form')">Delete Courses</button>
-    <div class="form-section" id="delete-form">
-        <h2>Select Courses to Delete</h2>
-        <form method="POST" action="{% url 'courseEnroll:delete_selected_courses' %}">
+        <h2>Your Enrolled Courses</h2>
+        <form method="post" action="{% url 'courseEnroll:search_courses' %}">
             {% csrf_token %}
+            <input type="search" name="search_courses" placeholder="Enter Course ID" required>
+            <button type="submit" class="button" onclick="setAction('enroll')">Enroll into more courses</button>
+        </form>
+        <ul>
             {% if enrolled_courses %}
                 {% for item in enrolled_courses %}
-                    <div class="course-item">
-                        <input type="checkbox" name="selected_courses" value="{{ item.course.course_id }}">
-                        <label><strong>{{ item.course.name }}</strong> ({{ item.course.credits }} credits)</label>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p>No courses to delete.</p>
-            {% endif %}
-            <button type="submit" class="button">Delete Selected Courses</button>
-        </form>
-    </div>
-
-    <button type="button" class="button" onclick="toggleForm('override-form')">Request Override</button>
-    <div class="form-section" id="override-form">
-        <h2>Override Form Request</h2>
-        <h3>Submit a New Override Request</h3>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="button">Submit Override Request</button>
-        </form>
-        <h3>Previous Override Requests</h3>
-        {% if override_form_submissions %}
-            <ul>
-                {% for override_form in override_form_submissions %}
                     <li>
-                        <strong>Submitted On:</strong> {{ override_form.date }}<br>
-                        <strong>Status:</strong> {{ override_form.status }}<br>
-                        <strong>Course:</strong> {{ override_form.course_code }}
+                        <h3>{{ item.course.name }} ({{ item.course.course_id }})</h3>
+                        <p><strong>Instructor:</strong> {{ item.course.Instructor.Name }}</p>
+                        <p><strong>Description:</strong> {{ item.course.description }}</p>
+                        <p><strong>Credits:</strong> {{ item.course.credits }}</p>
+                        <p><strong>Class Time:</strong> {{ item.course.start_time }} - {{ item.course.end_time }}</p>
                     </li>
                 {% endfor %}
-            </ul>
-        {% else %}
-            <p>No previous override requests found.</p>
-        {% endif %}
-    </div>
+            {% else %}
+                <li>You are not enrolled in any courses.</li>
+            {% endif %}
+        </ul>
 
+        <h2>Waitlisted Courses</h2>
+        <form method="post" action="{% url 'courseEnroll:search_courses' %}">
+            {% csrf_token %}
+            <input type="search" name="search_courses" placeholder="Enter Course ID" required>
+            <button type="submit" class="button" onclick="setAction('waitlist')">Waitlist into more courses</button>
+        </form>
+        <ul>
+            {% if waitlist_courses %}
+                {% for item in waitlist_courses %}
+                    <li>
+                        <h3>
+                            <a href="{% url 'courseEnroll:course_enrollment' item.course.course_id %}">
+                                {{ item.course.name }} ({{ item.course.course_id }})
+                            </a>
+                        </h3>
+                        <p><strong>Instructor:</strong> {{ item.course.Instructor.name }}</p>
+                        <p><strong>Description:</strong> {{ item.course.description }}</p>
+                        <p><strong>Credits:</strong> {{ item.course.credits }}</p>
+                        <p><strong>Class Time:</strong> {{ item.course.start_time }} - {{ item.course.end_time }}</p>
+                        <p><strong>Created Time:</strong> {{ item.created_at }}</p>
+                    </li>
+                {% endfor %}
+            {% else %}
+                <li>You are not waitlisted in any courses.</li>
+            {% endif %}
+        </ul>
+    </div>
+    <footer>
+        <p>&copy; 2024 NYU ENROLLS</p>
+    </footer>
     <script>
-        function toggleForm(id) {
-            var form = document.getElementById(id);
-            form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
+        function setAction(action) {
+            document.getElementById('formAction').value = action;
         }
     </script>
 </body>
