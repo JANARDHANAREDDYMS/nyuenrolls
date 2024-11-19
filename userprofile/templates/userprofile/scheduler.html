@@ -6,11 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Course Scheduler</title>
     <link rel="stylesheet" href="{% static 'userprofile/scheduler.css' %}">
+    <style>
+        .navbar{
+            background: #56018d !important;
+        }
+        .col-color{
+            background: #56018d !important;
+        }
+        .nav-left {
+            font-family: 'Cinzel', serif;
+			font-weight: bold;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-left">
-            <h2>Course Enrollment App</h2>
+            <h2>NYUEnrolls</h2>
         </div>
         <div class="nav-right">
             <a href="/dashboard">Dashboard</a>
@@ -47,7 +59,7 @@
         <div class="scheduler">
             <table>
                 <thead>
-                    <tr>
+                    <tr class="col-color">
                         <th>Time</th>
                         <th>Monday</th>
                         <th>Tuesday</th>
