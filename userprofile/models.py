@@ -19,14 +19,15 @@ class StudentInfo(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     Name = models.CharField(max_length=100)
     email = models.EmailField(max_length=100)
-    semester = models.CharField(max_length=20, choices=semester_choices, default="1st Sem")
     Education_Level = models.CharField(max_length=50, choices=Edu_levels)
+    semester = models.CharField(max_length=20, choices=semester_choices, default="1st Sem")
     Phone_no = models.CharField(max_length=15)  
     School = models.CharField(max_length=50, choices=Schools)
     is_ta = models.BooleanField(default=False)
     ta_course = models.ForeignKey('courseEnroll.CourseInfo', null=True, blank=True, related_name='tas', on_delete=models.SET_NULL)  # Use app label 'coursenroll'
     course_enrolled = models.ManyToManyField('courseEnroll.CourseInfo', related_name='enrolled_students')  # Use app label 'coursenroll'
     advisor = models.ForeignKey('AdminInfo', related_name='advising_students', on_delete=models.SET_NULL, null=True)
+    department = models.ForeignKey('userprofile.DepartmentInfo', null=True, blank=True, related_name='students', on_delete=models.SET_NULL,default="CSE")
 
 class AdminInfo(models.Model):
     admin_id = models.CharField(max_length=9)

@@ -1,14 +1,22 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.db import transaction
 from django.contrib import messages
 from userprofile.models import StudentInfo
 from .models import CourseInfo, Enrollment
+from .forms import OverrideFormSubmission
+from courseEnroll.models import OverrideForm
+from django.shortcuts import get_object_or_404
 
 @login_required
 def dashboard(request):
     student_info = StudentInfo.objects.get(user=request.user)
+    student_department = student_info.department
+
     all_enrollments = student_info.enrollments.all()
+    courses = CourseInfo.objects.filter(Department=student_department)
+
     enrolled_courses = [
         {'course': enrollment.course, 'created_at': enrollment.created_at} 
         for enrollment in all_enrollments if not enrollment.is_waitlisted
@@ -18,10 +26,30 @@ def dashboard(request):
         for enrollment in all_enrollments if enrollment.is_waitlisted
     ]
 
+    inconsistencies = verify_course_enrollment_consistency()
+
+    override_form_submissions = OverrideForm.objects.filter(student=student_info)
+
+    # Handle form submission
+    if request.method == "POST":
+        form = OverrideFormSubmission(request.POST)
+        if form.is_valid():
+            override_form = form.save(commit=False)
+            override_form.student = student_info  # Attach student to the form
+            override_form.save()
+            return redirect('courseEnroll:dashboard')  # Redirect to refresh the page
+
+    else:
+        form = OverrideFormSubmission(user=request.user)
+
     return render(request, 'courseEnroll/dashboard.html', {
         'student_info': student_info,
+        'courses': courses,
+        'inconsistencies': inconsistencies,
         'enrolled_courses': enrolled_courses,
         'waitlist_courses': waitlist_courses,
+        'override_form_submissions': override_form_submissions,  # Pass previous submissions
+        'form': form,
     })
 
 @login_required
@@ -48,75 +76,90 @@ def search_courses(request):
 def select_courses(request):
     if request.method == 'POST':
         student_info = StudentInfo.objects.get(user=request.user)
-        student_school =  student_info.School
+        student_school = student_info.School
+        student_department = student_info.department
         selected_courses = request.POST.getlist('selected_courses')
-        edu_level = request.user.studentinfo.Education_Level
-        total_credits = sum(enrollment.course.credits for enrollment in request.user.studentinfo.enrollments.filter(is_waitlisted=False))
+        edu_level = student_info.Education_Level
+        total_credits = sum(
+            enrollment.course.credits 
+            for enrollment in student_info.enrollments.filter(is_waitlisted=False)
+        )
         action = request.POST.get('action', 'enroll')
 
-        for course_id in selected_courses:
-            course = CourseInfo.objects.get(course_id=course_id)
-            course_school = course.school
-            credit = course.credits
+        with transaction.atomic():  
+            for course_id in selected_courses:
+                course = CourseInfo.objects.get(course_id=course_id)
+                credit = course.credits
 
-            
-
-            if edu_level == "Undergraduate":
-                capacity = course.undergrad_capacity
-            elif edu_level == "Graduate":
-                capacity = course.grad_Capacity
-            else:
-                capacity = course.phd_course_capacity
-
-            is_waitlisted = Enrollment.objects.filter(
-                student=request.user.studentinfo,
-                course=course,
-                is_waitlisted=True
-            ).exists()
-
-            if is_waitlisted:
-                messages.error(request, f"You are already waitlisted for the course: {course.name}.")
-                continue
-
-            if action == 'waitlist' and not is_waitlisted:
+                if course.school != student_school:
+                    messages.error(request, f"{course.name} is not offered by your school ({student_school}). Please contact your advisor.")
+                    continue
                 
-                    if not Enrollment.objects.filter(student=request.user.studentinfo, course=course, is_waitlisted=False).exists():
-                        Enrollment.objects.create(student=request.user.studentinfo, course=course, is_waitlisted=True)
-                        request.user.studentinfo.course_enrolled.add(course)
+                if course.Department != student_department:
+                    override = OverrideForm.objects.filter(
+                        student=student_info, course_code=course, status='Approved'
+                    ).first()
+
+                    if not override:
+                        messages.error(
+                            request,
+                            f"{course.name} is not in your department ({student_department.name}). "
+                            "Please submit an override request and wait for approval before enrolling."
+                        )
+                        continue
+
+                if edu_level == "Undergraduate":
+                    capacity = course.undergrad_capacity
+                elif edu_level == "Graduate":
+                    capacity = course.grad_Capacity
+                else:
+                    capacity = course.phd_course_capacity
+
+                is_waitlisted = Enrollment.objects.filter(
+                    student=student_info, course=course, is_waitlisted=True
+                ).exists()
+
+                if is_waitlisted:
+                    messages.error(request, f"You are already waitlisted for {course.name}.")
+                    continue
+
+                if action == 'waitlist' and not is_waitlisted:
+                    if not Enrollment.objects.filter(student=student_info, course=course, is_waitlisted=False).exists():
+                        Enrollment.objects.create(student=student_info, course=course, is_waitlisted=True)
+                        student_info.course_enrolled.add(course)
                         messages.success(request, f"You have been added to the waitlist for {course.name}.")
                     else:
                         messages.error(request, f"You are already enrolled in {course.name}.")
-               
-
-            elif action == 'enroll':
-                if (Enrollment.objects.filter(student=request.user.studentinfo, course=course, is_waitlisted=False).exists() 
-                or course in request.user.studentinfo.course_enrolled.all()):
-        
-                    messages.warning(request, f"You are already enrolled in {course.name}.")
-                    continue
-                if total_credits + credit <= 9:
-                    if course.grad_Capacity > 0:
-                        Enrollment.objects.create(student=request.user.studentinfo, course=course, is_waitlisted=False)
-                        request.user.studentinfo.course_enrolled.add(course)
-                        total_credits += credit
-                        
-                        if edu_level == "Undergraduate":
-                            course.undergrad_capacity -= 1
-                        elif edu_level == "Graduate":
-                            course.grad_Capacity -= 1
+                elif action == 'enroll':
+                    if (Enrollment.objects.filter(student=student_info, course=course, is_waitlisted=False).exists() 
+                        or course in student_info.course_enrolled.all()):
+                        messages.warning(request, f"You are already enrolled in {course.name}.")
+                        continue
+                    
+                    if total_credits + credit <= 9:
+                        if capacity > 0:
+                            Enrollment.objects.create(student=student_info, course=course, is_waitlisted=False)
+                            student_info.course_enrolled.add(course)
+                            total_credits += credit
+                            if edu_level == "Undergraduate":
+                                course.undergrad_capacity -= 1
+                            elif edu_level == "Graduate":
+                                course.grad_Capacity -= 1
+                            else:
+                                course.phd_course_capacity -= 1
+                            course.save()
+                            messages.success(request, f"Successfully enrolled in {course.name}.")
                         else:
-                            course.phd_course_capacity -= 1
-                        
-                        course.save()
+                            if course.to_waitlist:
+                                Enrollment.objects.create(student=student_info, course=course, is_waitlisted=True)
+                                student_info.course_enrolled.add(course)
+                                messages.success(request, f"You have been added to the waitlist for {course.name}.")
+                            else:
+                                messages.error(request, f"Capacity for {course.name} is full. Try waitlisting.")
                     else:
-                        if course.to_waitlist:
-                            Enrollment.objects.create(student=request.user.studentinfo, course=course, is_waitlisted=True)
-                            request.user.studentinfo.course_enrolled.add(course)
-                            messages.success(request, f"You have been added to the waitlist for {course.name}.")
-                        else:
-                            messages.error(request, f"The current capacity for {course.name} has been filled. Try to waitlist instead.")
-                else:
-                    messages.error(request, "You have reached your course credit limit of 9.")
+                        messages.error(request, "You have reached your course credit limit of 9.")
+
+        student_info.save()
 
     return redirect('courseEnroll:dashboard')
 
@@ -127,18 +170,15 @@ def delete_selected_courses(request):
         if selected_courses:
             for course_id in selected_courses:
                 try:
-                    # Retrieve the Enrollment instance first
-                    enrollment = Enrollment.objects.get(student=request.user.studentinfo, course__course_id=course_id)
-                    
-                    # Delete the enrollment entry (removes the student-course relationship)
+                    enrollment = Enrollment.objects.get(student=request.user.studentinfo, course__course_id=course_id)  
+                    request.user.studentinfo.course_enrolled.remove(enrollment.course)
                     enrollment.delete()
 
-                    # If you want to ensure that the student is removed from the course's enrolled students, remove the course as well
-                    # This is for a better sync in case any other places depend on `course_enrolled`
-                    request.user.studentinfo.course_enrolled.remove(enrollment.course)
-
+                    messages.success(request, f"Course {enrollment.course.name} successfully removed.")
                 except Enrollment.DoesNotExist:
-                    pass  # If no enrollment found, simply skip the course
+                    messages.error(request, f"Enrollment for course ID {course_id} does not exist.")
+                except Exception as e:
+                    messages.error(request, f"An error occurred: {e}")
 
     return redirect('courseEnroll:dashboard')
 
@@ -171,3 +211,39 @@ def course_enrollment(request, course_id):
         'enrollments': waitlist_record
     }
     return render(request, 'courseEnroll/course_enrollment.html', context)
+
+
+from django.db.models import Count
+
+def verify_course_enrollment_consistency():
+   
+    mismatches = {}
+
+    for student in StudentInfo.objects.annotate(enrolled_count=Count('course_enrolled')):
+        course_enrolled_ids = set(student.course_enrolled.values_list('course_id', flat=True))
+        
+        enrollment_course_ids = set(student.enrollments.values_list('course__course_id', flat=True))
+        
+        if course_enrolled_ids != enrollment_course_ids:
+            mismatches[student.N_id] = {
+                'course_enrolled_ids': course_enrolled_ids,
+                'enrollment_course_ids': enrollment_course_ids,
+                'difference': {
+                    'in_course_enrolled_not_in_enrollments': course_enrolled_ids - enrollment_course_ids,
+                    'in_enrollments_not_in_course_enrolled': enrollment_course_ids - course_enrolled_ids,
+                }
+            }
+    
+    if not mismatches:
+        print("All student course data is consistent.")
+    else:
+        print("Inconsistencies found. See details below:")
+        for student_id, details in mismatches.items():
+            print(f"Student ID: {student_id}")
+            print(f"  - Courses in `course_enrolled` but not in `Enrollment`: {details['difference']['in_course_enrolled_not_in_enrollments']}")
+            print(f"  - Courses in `Enrollment` but not in `course_enrolled`: {details['difference']['in_enrollments_not_in_course_enrolled']}")
+    
+    return mismatches
+
+def submit_override_form(request):
+    pass

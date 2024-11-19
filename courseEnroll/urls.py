@@ -10,4 +10,5 @@ urlpatterns = [
     path('delete_selected_courses/', views.delete_selected_courses, name='delete_selected_courses'),
     path('update_enrollment/', views.update_enrollment, name='update_enrollment'),
     path('course/<str:course_id>/', views.course_enrollment, name='course_enrollment'),
+    path('submit_override_form/', views.submit_override_form, name='submit_override'),
 ]

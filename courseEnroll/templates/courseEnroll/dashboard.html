@@ -27,109 +27,162 @@
         .course-item {
             margin: 10px 0;
         }
-        .delete-form {
+        .form-section {
             display: none;
             margin-top: 20px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
         }
     </style>
 </head>
 <body>
     <a href="{% url 'userprofile:user_profile' %}" class="button">Go to User Profile</a>
 
-    <h1>Welcome, {{ student_info.Name }}</h1>
-
+    <h1>Welcome, {{ student_info.Name }} ({{ student_info.N_id }})</h1>
+    
+    {% if inconsistencies %}
+    <h2>Data Inconsistencies Found</h2>
+    <ul>
+        {% for student_id, details in inconsistencies.items %}
+            <li>
+                <strong>Student ID:</strong> {{ student_id }}<br>
+                <strong>Courses in `course_enrolled` but not in `Enrollment`:</strong>
+                {% if details.difference.in_course_enrolled_not_in_enrollments %}
+                    <ul>
+                        {% for course in details.difference.in_course_enrolled_not_in_enrollments %}
+                            <li>{{ course_id }} - {{ course.name }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    None
+                {% endif %}
+                <strong>Courses in `Enrollment` but not in `course_enrolled`:</strong>
+                {% if details.difference.in_enrollments_not_in_course_enrolled %}
+                    <ul>
+                        {% for course in details.difference.in_enrollments_not_in_course_enrolled %}
+                            <li>{{ course_id }} - {{ course.name }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    None
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No inconsistencies found. All data is consistent.</p>
+    {% endif %}
+    
     {% if messages %}
-    <script type="text/JavaScript">
+    <script>
         {% for message in messages %}
-            alert("{{ message }}")
+            alert("{{ message }}");
         {% endfor %}
     </script>
     {% endif %}
-    
+
+    <form method="post" action="{% url 'userprofile:logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="button">Logout</button>
+    </form>
+
     <h2>Your Enrolled Courses</h2>
     <form method="post" action="{% url 'courseEnroll:search_courses' %}">
         {% csrf_token %}
         <input type="search" name="search_courses" placeholder="Enter Course ID" required>
-        <input type="hidden" name="action" id="formAction" value="enroll">
-        <button type="submit" class="button" onclick="setAction('enroll')">Enroll into more courses</button>
+        <button type="submit" class="button">Enroll into More Courses</button>
     </form>
 
     <ul>
         {% if enrolled_courses %}
             {% for item in enrolled_courses %}
                 <li>
-                    <h2>{{ item.course.name }} ({{ item.course.course_id }})</h2>
-                    <strong>Instructor :</strong> {{ item.course.Instructor.Name }}<br>  
-                    <strong>Description :</strong> {{ item.course.description }}<br>
-                    <strong>Credits :</strong> {{ item.course.credits }}<br> 
-                    <strong>Class Time :</strong> {{ item.course.start_time }} <a>--</a> {{ item.course.end_time }}<br>
+                    <h3>{{ item.course.name }} ({{ item.course.course_id }})</h3>
+                    <strong>Instructor:</strong> {{ item.course.Instructor.Name }}<br>
+                    <strong>Description:</strong> {{ item.course.description }}<br>
+                    <strong>Credits:</strong> {{ item.course.credits }}<br>
+                    <strong>Class Time:</strong> {{ item.course.start_time }} – {{ item.course.end_time }}<br>
                 </li>
             {% endfor %}
         {% else %}
-            <li>You are not waitlisted in any courses.</li>
+            <p>You are not enrolled in any courses.</p>
         {% endif %}
     </ul>
 
+    <h2>Waitlist</h2>
     <form method="post" action="{% url 'courseEnroll:search_courses' %}">
         {% csrf_token %}
         <input type="search" name="search_courses" placeholder="Enter Course ID" required>
-        <input type="hidden" name="action" id="formAction" value="waitlist">
-        <button type="submit" class="button" onclick="setAction('waitlist')">Waitlist into more Courses</button>
+        <button type="submit" class="button">Waitlist into More Courses</button>
     </form>
+
     <ul>
         {% if waitlist_courses %}
             {% for item in waitlist_courses %}
                 <li>
-                    <h3>
-                        <a href="{% url 'courseEnroll:course_enrollment' item.course.course_id %}">
-                            {{ item.course.name }} ({{ item.course.course_id }})
-                        </a>
-                    </h3>
-                    <strong>Instructor :</strong> {{ item.course.Instructor.name }}<br>  
-                    <strong>Description :</strong> {{ item.course.description }}<br>
-                    <strong>Credits :</strong> {{ item.course.credits }}<br> 
-                    <strong>Class Time :</strong> {{ item.course.start_time }} <a>--</a> {{ item.course.end_time }}<br>
+                    <h3>{{ item.course.name }} ({{ item.course.course_id }})</h3>
+                    <strong>Instructor:</strong> {{ item.course.Instructor.Name }}<br>
+                    <strong>Description:</strong> {{ item.course.description }}<br>
+                    <strong>Credits:</strong> {{ item.course.credits }}<br>
+                    <strong>Class Time:</strong> {{ item.course.start_time }} – {{ item.course.end_time }}<br>
                     <strong>Created Time:</strong> {{ item.created_at }}
                 </li>
             {% endfor %}
         {% else %}
-            <li>You are not waitlisted in any courses.</li>
+            <p>You are not waitlisted in any courses.</p>
         {% endif %}
     </ul>
-    <!-- <button type="button" id="delete-course-btn" class="button" onclick="toggleDeleteForm()">Delete Courses</button> -->
 
-    <!-- <div class="delete-form" id="delete-form">
+    <button type="button" class="button" onclick="toggleForm('delete-form')">Delete Courses</button>
+    <div class="form-section" id="delete-form">
         <h2>Select Courses to Delete</h2>
         <form method="POST" action="{% url 'courseEnroll:delete_selected_courses' %}">
             {% csrf_token %}
-            
             {% if enrolled_courses %}
                 {% for item in enrolled_courses %}
                     <div class="course-item">
-                        <input type="checkbox" name="selected_courses" value="{{ course.course_id }}">
-                        <label><strong>COurse Name:{{ item.course.name }} </strong> ({{ item.course.credits }} credits)</label>
+                        <input type="checkbox" name="selected_courses" value="{{ item.course.course_id }}">
+                        <label><strong>{{ item.course.name }}</strong> ({{ item.course.credits }} credits)</label>
                     </div>
                 {% endfor %}
             {% else %}
-                <p>You are not enrolled in any courses.</p>
+                <p>No courses to delete.</p>
             {% endif %}
-            
-            <button type="submit" class="btn btn-danger">Delete Selected Courses</button>
+            <button type="submit" class="button">Delete Selected Courses</button>
         </form>
-    </div> -->
+    </div>
+
+    <button type="button" class="button" onclick="toggleForm('override-form')">Request Override</button>
+    <div class="form-section" id="override-form">
+        <h2>Override Form Request</h2>
+        <h3>Submit a New Override Request</h3>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="button">Submit Override Request</button>
+        </form>
+        <h3>Previous Override Requests</h3>
+        {% if override_form_submissions %}
+            <ul>
+                {% for override_form in override_form_submissions %}
+                    <li>
+                        <strong>Submitted On:</strong> {{ override_form.date }}<br>
+                        <strong>Status:</strong> {{ override_form.status }}<br>
+                        <strong>Course:</strong> {{ override_form.course_code }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No previous override requests found.</p>
+        {% endif %}
+    </div>
 
     <script>
-        function toggleDeleteForm() {
-            var deleteForm = document.getElementById('delete-form');
-            if (deleteForm.style.display === 'none' || deleteForm.style.display === '') {
-                deleteForm.style.display = 'block';
-            } else {
-                deleteForm.style.display = 'none';
-            }
-        }
-
-        function setAction(action) {
-            document.getElementById('formAction').value = action;
+        function toggleForm(id) {
+            var form = document.getElementById(id);
+            form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
         }
     </script>
 </body>
