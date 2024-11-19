@@ -37,7 +37,8 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         h1, h2 {
-            color: #57068c; /* NYU Violet */
+            color: #57068c;
+            font-size: large; /* NYU Violet */
         }
         ul {
             list-style: none;
@@ -68,7 +69,7 @@
             text-decoration: none;
             border: none;
             border-radius: 5px;
-            font-size: 14px;
+            font-size: 12px;
             cursor: pointer;
             text-align: center;
         }
@@ -120,9 +121,8 @@
 </head>
 <body>
     <header>
-        <img src="NYU-Logo.png" alt="NYU Logo">
+        <!-- <img src="NYU-Logo.png" alt="NYU Logo"> -->
         <a href="{% url 'userprofile:user_profile' %}">Go to User Profile</a>
-        <p align="left">NYU ENROLLS</p>
     </header>
     <div class="container">
         <h1>Welcome, {{ student_info.Name }}</h1>
