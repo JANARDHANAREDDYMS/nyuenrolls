@@ -217,11 +217,41 @@
             {% endif %}
         </ul>
     </div>
-
+    <div class="container">
+        <button class="button" onclick="toggleForm('override-form')">Fill Override Form</button>
+        <div class="form-section" id="override-form">
+            <h2>Override Form Request</h2>
+            <h3>Submit a New Override Request</h3>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="button">Submit Override Request</button>
+            </form>
+            <h3>Previous Override Requests</h3>
+            {% if override_form_submissions %}
+                <ul>
+                    {% for override_form in override_form_submissions %}
+                        <li>
+                            <strong>Submitted On:</strong> {{ override_form.date }}<br>
+                            <strong>Status:</strong> {{ override_form.status }}<br>
+                            <strong>Course:</strong> {{ override_form.course_code }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No previous override requests found.</p>
+            {% endif %}
+        </div>
+    </div>
     <footer>
         <p>&copy; 2024 NYU ENROLLS</p>
     </footer>
-
+    <script>
+        function toggleForm(id) {
+            var form = document.getElementById(id);
+            form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
+        }
+    </script>
     <script>
         function setAction(action) {
             document.getElementById('formAction').value = action;
