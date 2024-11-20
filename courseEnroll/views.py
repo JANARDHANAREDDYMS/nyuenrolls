@@ -91,7 +91,6 @@ def select_courses(request):
                 course = CourseInfo.objects.get(course_id=course_id)
                 credit = course.credits
 
-                # Debug: Check the course capacity and other details
                 print(f"Checking course: {course.name}, Capacity: {course.undergrad_capacity if edu_level == 'Undergraduate' else course.grad_Capacity if edu_level == 'Graduate' else course.phd_course_capacity}")
                 
                 if course.school != student_school:
@@ -111,13 +110,11 @@ def select_courses(request):
                         )
                         continue
 
-                # Determine capacity based on education level
                 if edu_level == "Graduate":
                     capacity = course.grad_Capacity
                 else:
                     capacity = course.phd_course_capacity
 
-                # Debug: Check if student is already waitlisted
                 is_waitlisted = Enrollment.objects.filter(
                     student=student_info, course=course, is_waitlisted=True
                 ).exists()
@@ -135,15 +132,12 @@ def select_courses(request):
                     else:
                         messages.error(request, f"You are already enrolled in {course.name}.")
                 elif action == 'enroll':
-                    # Check if the student is already enrolled in the course
                     if (Enrollment.objects.filter(student=student_info, course=course, is_waitlisted=False).exists() 
                         or course in student_info.course_enrolled.all()):
                         messages.warning(request, f"You are already enrolled in {course.name}.")
                         continue
                     
-                    # Check if the student is within the credit limit
                     if total_credits + credit <= 9:
-                        # Check course capacity before enrolling
                         if capacity > 0:
                             Enrollment.objects.create(student=student_info, course=course, is_waitlisted=False)
                             student_info.course_enrolled.add(course)
@@ -155,7 +149,6 @@ def select_courses(request):
                             course.save()
                             messages.success(request, f"Successfully enrolled in {course.name}.")
                         else:
-                            # Handle course waitlisting
                             if course.to_waitlist:
                                 Enrollment.objects.create(student=student_info, course=course, is_waitlisted=True)
                                 student_info.course_enrolled.add(course)
