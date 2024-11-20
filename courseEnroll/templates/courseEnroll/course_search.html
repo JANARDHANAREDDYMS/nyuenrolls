@@ -179,6 +179,7 @@
                     </div>
                 {% endfor %}
 
+                <!-- Fix: Button rendering logic based on action -->
                 {% if action == "enroll" %}
                     <button type="submit" class="button">Enroll</button>
                 {% elif action == "waitlist" %}

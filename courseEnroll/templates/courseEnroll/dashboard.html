@@ -173,6 +173,7 @@
         <h2>Your Enrolled Courses</h2>
         <form method="post" action="{% url 'courseEnroll:search_courses' %}">
             {% csrf_token %}
+            <input type="hidden" name="action" id="formAction" value="enroll"> <!-- Hidden input field for action -->
             <input type="search" name="search_courses" placeholder="Enter Course ID" required>
             <button type="submit" class="button" onclick="setAction('enroll')">Enroll into more courses</button>
         </form>
@@ -195,6 +196,7 @@
         <h2>Waitlisted Courses</h2>
         <form method="post" action="{% url 'courseEnroll:search_courses' %}">
             {% csrf_token %}
+            <input type="hidden" name="action" id="formAction" value="waitlist"> <!-- Hidden input field for action -->
             <input type="search" name="search_courses" placeholder="Enter Course ID" required>
             <button type="submit" class="button" onclick="setAction('waitlist')">Waitlist into more courses</button>
         </form>
