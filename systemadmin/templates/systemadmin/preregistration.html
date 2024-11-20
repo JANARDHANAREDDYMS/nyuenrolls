@@ -5,19 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pre-Registration Analytics</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f9f9f9; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        h2 { text-align: center; color: #333; }
-        .filters, .dashboard-button { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .filters label, .filters select { margin: 0 10px; padding: 8px; font-size: 1rem; }
-        
-        /* Enhanced Dashboard Button */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #57068c; /* NYU Violet */
+            font-weight: bold;
+        }
+
+        /* Back to Dashboard Button */
         .dashboard-button {
             display: flex;
             justify-content: flex-start;
+            margin-bottom: 20px;
         }
+
         .dashboard-button button {
-            background-color: #4CAF50;
+            background-color: #57068c; /* NYU Violet */
             color: white;
             padding: 10px 20px;
             font-size: 1rem;
@@ -26,43 +42,111 @@
             cursor: pointer;
             transition: background-color 0.3s;
         }
+
         .dashboard-button button:hover {
-            background-color: #45a049;
+            background-color: #4b007d; /* Dark Violet */
         }
 
-        /* Responsive Table */
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
+        /* Filters */
+        .filters {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filters label {
+            font-size: 1rem;
+            color: #57068c; /* NYU Violet */
+            font-weight: bold;
+        }
+
+        .filters select {
+            padding: 8px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 20px;
-            table-layout: fixed; 
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        th, td { 
-            border: 1px solid #ddd; 
-            padding: 10px; 
-            text-align: left; 
-            font-size: 1rem; 
-            white-space: nowrap; 
-            overflow: hidden; 
-            text-overflow: ellipsis;
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+            font-size: 1rem;
         }
-        th { background-color: #4CAF50; color: white; }
-        
+
+        th {
+            background-color: #57068c; /* NYU Violet */
+            color: white;
+            text-align: center;
+        }
+
+        td {
+            text-align: center;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f4f4f4; /* Light Gray for Alternating Rows */
+        }
+
+        tr:hover {
+            background-color: #e0e0e0;
+        }
+
         /* Pagination */
         .pagination {
             display: flex;
             justify-content: center;
             margin-top: 20px;
         }
+
         .pagination button {
-            background-color: #4CAF50;
+            background-color: #57068c; /* NYU Violet */
             color: white;
             border: none;
             padding: 8px 16px;
             margin: 0 4px;
             cursor: pointer;
+            border-radius: 5px;
         }
-        .pagination button.active { background-color: #a07845; }
+
+        .pagination button.active {
+            background-color: #4b007d; /* Dark Violet */
+        }
+
+        .pagination button:hover {
+            background-color: #4b007d;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .filters {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .filters select {
+                width: 100%;
+            }
+
+            table {
+                font-size: 0.9rem;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -119,7 +203,6 @@
     </div>
 
     <script>
-        // Mock data with 30 sample courses
         const courses = Array.from({ length: 30 }, (_, i) => {
             const departmentOptions = ["Computer Science", "Mechanical Engineering", "Theatre"];
             const department = departmentOptions[i % 3];
@@ -135,21 +218,17 @@
                 out_department_requests: out_department_requests,
                 requests: in_department_requests + out_department_requests,
             };
-
         });
 
-        const itemsPerPage = 20;
+        const itemsPerPage = 10;
         let currentPage = 1;
 
-        // Function to apply filters and sorting
         function applyFilters() {
             const department = document.getElementById('department').value;
             const sortOption = document.getElementById('sort').value;
 
-            // Filter by department
             let filteredCourses = courses.filter(course => department === "All" || course.department === department);
 
-            // Sort based on selected option
             if (sortOption === "requests-desc") {
                 filteredCourses.sort((a, b) => b.requests - a.requests);
             } else if (sortOption === "requests-asc") {
@@ -158,16 +237,14 @@
                 filteredCourses.sort((a, b) => a.courseCode.localeCompare(b.courseCode));
             }
 
-            // Update pagination and display
             currentPage = 1;
             displayCourses(filteredCourses);
             setupPagination(filteredCourses);
         }
 
-        // Function to display courses for the current page
         function displayCourses(coursesToDisplay) {
             const tableBody = document.getElementById('courseTable');
-            tableBody.innerHTML = ''; // Clear previous rows
+            tableBody.innerHTML = '';
 
             const startIndex = (currentPage - 1) * itemsPerPage;
             const endIndex = startIndex + itemsPerPage;
@@ -186,7 +263,6 @@
             });
         }
 
-        // Function to set up pagination controls
         function setupPagination(coursesToDisplay) {
             const paginationControls = document.getElementById('paginationControls');
             paginationControls.innerHTML = '';
@@ -206,7 +282,6 @@
             }
         }
 
-        // Initial display of courses
         applyFilters();
     </script>
 </body>

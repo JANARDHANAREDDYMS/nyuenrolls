@@ -1,74 +1,196 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-   <title>Search</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #4b007d;
+            color: white;
+            padding: 10px 20px;
+        }
+        header img {
+            height: 50px;
+        }
+        header a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            margin-left: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #4b007d;
+            font-size: medium;
+        }
+        .button {
+            display: inline-block;
+            margin: 10px 0;
+            padding: 12px 20px;
+            background-color: #4b007d;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .button:hover {
+            background-color: #4b007d;
+        }
+        form {
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        label {
+            font-size: 14px;
+        }
+        select, input[type="number"], input[type="checkbox"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .course-item {
+            padding: 15px;
+            margin: 10px 0;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .course-item h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #4b007d;
+        }
+        .course-item p, .course-item strong {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .filter-section {
+            margin: 20px 0;
+        }
+        footer {
+            text-align: center;
+            padding: 10px 0;
+            margin-top: 20px;
+            background-color: #4b007d;
+            color: white;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            .button {
+                padding: 10px;
+                font-size: 12px;
+            }
+            h2 {
+                font-size: 18px;
+            }
+            select, input[type="number"], input[type="checkbox"] {
+                font-size: 12px;
+            }
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            header img {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <a href="{% url 'userprofile:user_profile' %}" class="button">Go to User Profile</a>
+    <header>
+        <!-- <img src="path/to/nyu-logo.png" alt="NYU Logo"> -->
+        <a href="{% url 'userprofile:user_profile' %}">Go to User Profile</a>
+    </header>
+    <div class="container">
+        <div class="filter-section">
+            <form method="get" action="{% url 'courseEnroll:search_courses' %}">
+                <label for="school">Filter by School:</label>
+                <select id="school" name="school" onchange="this.form.submit()">
+                    <option value="">All Schools</option>
+                    {% for school in schools %}
+                        <option value="{{ school.id }}" {% if school.id == selected_school %}selected{% endif %}>{{ school.name }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
 
-    <form method="get" action="{% url 'courseEnroll:search_courses' %}">
-        <label for="school">Filter by School:</label>
-        <select id="school" name="school" onchange="this.form.submit()">
-            <option value="">All Schools</option>
-            {% for school in schools %}
-                <option value="{{ school.id }}" {% if school.id == selected_school %}selected{% endif %}>{{ school.name }}</option>
-            {% endfor %}
-        </select>
-    </form>
+        {% if search_courses %}
+            <h2>Search Results for "{{ search_courses }}"</h2>
+            <h2>Matched Courses</h2>
+            <p><strong>Action:</strong> {{ action }}</p>
+            <form method="post" action="{% url 'courseEnroll:select_courses' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="{{ action }}">
 
-    {% if search_courses %}
-        <h2>You searched for "{{ search_courses }}"</h2>
-        <h2>Matched Courses</h2>
-
-        <p>Action Value: {{ action }}</p>
-
-        <form method="post" action="{% url 'courseEnroll:select_courses' %}">
-            {% csrf_token %}
-            
-            <input type="hidden" name="action" value="{{ action }}">
-
-            {% for course in courses %}
-                <div>
-                    <label>
-                        <input type="checkbox" name="selected_courses" value="{{ course.course_id }}">
-                        Select Course
-                    </label>
-                    <h3>
-                        <a href="{% url 'courseEnroll:course_enrollment' course.course_id %}">
-                            {{ course.name }} ({{ course.course_id }})
-                        </a>
-                    </h3>
-                    <strong>Instructor:</strong> {{ course.Instructor.Name }}<br>
-                    <strong>Description:</strong> {{ course.description }}<br>
-                    <strong>Class Time:</strong> {{ course.start_time }} - {{ course.end_time }}<br>
-                    <strong>Capacity:</strong> {{ course.grad_Capacity }}<br>
-
-                    <strong>School:</strong> {{ course.school}}<br>
-
-                    {% if action == 'waitlist' %}
+                {% for course in courses %}
+                    <div class="course-item">
                         <label>
-                            <input type="checkbox" name="waitlist_{{ course.course_id }}">
-                            Waitlist
+                            <input type="checkbox" name="selected_courses" value="{{ course.course_id }}">
+                            Select Course
                         </label>
-                        <br>
-                        <label>
-                            Points Assigned:
-                            <input type="number" name="points_{{ course.course_id }}" value="{{ course.points_assigned|default:"0" }}">
-                        </label>
-                    {% endif %}
-                </div>
-                <hr>
-                <br>
-            {% endfor %}
-            
-            {% if action == "enroll" %}
-                <button type="submit" class="button" name="action" value="enroll">Enroll</button>
-            {% elif action == "waitlist" %}
-                <button type="submit" class="button" name="action" value="waitlist">Waitlist</button>
-            {% endif %}
-        </form>
-    {% else %}
-        <h2>Search for a course</h2>
-    {% endif %}
+                        <h3>
+                            <a href="{% url 'courseEnroll:course_enrollment' course.course_id %}">
+                                {{ course.name }} ({{ course.course_id }})
+                            </a>
+                        </h3>
+                        <p><strong>Instructor:</strong> {{ course.Instructor.Name }}</p>
+                        <p><strong>Description:</strong> {{ course.description }}</p>
+                        <p><strong>Class Time:</strong> {{ course.start_time }} - {{ course.end_time }}</p>
+                        <p><strong>Capacity:</strong> {{ course.grad_Capacity }}</p>
+                        <p><strong>School:</strong> {{ course.school }}</p>
+
+                        {% if action == 'waitlist' %}
+                            <label>
+                                <input type="checkbox" name="waitlist_{{ course.course_id }}">
+                                Waitlist
+                            </label>
+                            <br>
+                            <label>
+                                Points Assigned:
+                                <input type="number" name="points_{{ course.course_id }}" value="{{ course.points_assigned|default:"0" }}">
+                            </label>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                {% if action == "enroll" %}
+                    <button type="submit" class="button">Enroll</button>
+                {% elif action == "waitlist" %}
+                    <button type="submit" class="button">Waitlist</button>
+                {% endif %}
+            </form>
+        {% else %}
+            <h2>No results found. Please search for a course.</h2>
+        {% endif %}
+    </div>
+    <footer>
+        <p>&copy; 2024 NYU ENROLL</p>
+    </footer>
 </body>
 </html>

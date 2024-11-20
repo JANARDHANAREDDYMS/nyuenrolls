@@ -6,11 +6,145 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Course Scheduler</title>
     <link rel="stylesheet" href="{% static 'userprofile/scheduler.css' %}">
+    <style>
+        /* General Reset */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #2c2c2c;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #57068c; /* NYU Violet */
+            color: white;
+            padding: 10px 20px;
+        }
+
+        .navbar h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .nav-right a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: bold;
+        }
+
+        .nav-right a:hover {
+            text-decoration: underline;
+        }
+
+        /* Container Layout */
+        .container {
+            display: flex;
+            margin: 20px;
+            gap: 20px;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            width: 250px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar button {
+            width: 100%;
+            background-color: #57068c; /* NYU Violet */
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .sidebar button:hover {
+            background-color: #4b007d; /* Dark Violet */
+        }
+
+        .sidebar h3 {
+            color: #57068c; /* NYU Violet */
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar ul li {
+            margin: 5px 0;
+            padding: 10px;
+            background-color: #f4f4f4;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        /* Scheduler Styling */
+        .scheduler {
+            flex: 1;
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .scheduler table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .scheduler th,
+        .scheduler td {
+            border: 1px solid #ddd;
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        .scheduler th {
+            background-color: #57068c; /* NYU Violet */
+            color: white;
+        }
+
+        .scheduler td {
+            background-color: #f9f9f9;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+
+            .scheduler {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-left">
-            <h2>Course Enrollment App</h2>
+            <h2>NYU Course Scheduler</h2>
         </div>
         <div class="nav-right">
             <a href="/dashboard">Dashboard</a>
@@ -20,30 +154,31 @@
     </nav>
 
     <div class="container">
+        <!-- Sidebar -->
         <div class="sidebar">
             <button id="add-course-btn">Add Course</button>
             <div id="course-selector" class="hidden">
                 <div>
                     <label for="departments">Select Department:</label>
-                    <select id="departments"></select>
+                    <select id="departments" class="form-control"></select>
                 </div>
             
                 <div>
                     <label for="courses">Select Course:</label>
-                    <select id="courses" disabled></select>
+                    <select id="courses" class="form-control" disabled></select>
                 </div>
             
                 <div>
                     <label for="sections">Select Section:</label>
-                    <select id="sections" disabled></select>
+                    <select id="sections" class="form-control" disabled></select>
                 </div>
-                
             </div>
 
             <h3>Selected Courses</h3>
             <ul id="selected-courses"></ul>
         </div>
 
+        <!-- Scheduler -->
         <div class="scheduler">
             <table>
                 <thead>
@@ -57,7 +192,9 @@
                         <th>Saturday</th>
                     </tr>
                 </thead>
-                <tbody id="schedule-body"></tbody>
+                <tbody id="schedule-body">
+                    <!-- Scheduler rows go here -->
+                </tbody>
             </table>
         </div>
     </div>
