@@ -5,13 +5,16 @@ from django.db import transaction
 from django.contrib import messages
 from userprofile.models import StudentInfo
 from .models import CourseInfo, Enrollment
-from .forms import OverrideFormSubmission
+from .forms import OverrideFormSubmission,PreRegInfoForm
 from courseEnroll.models import OverrideForm
 from django.shortcuts import get_object_or_404
 
 @login_required
 def dashboard(request):
-    student_info = StudentInfo.objects.get(user=request.user)
+    try:
+        student_info = StudentInfo.objects.get(user=request.user)
+    except StudentInfo.DoesNotExist:
+        return render(request, "userprofile/student_not_found.html", {"error": "Student profile not found."})
     student_department = student_info.department
 
     all_enrollments = student_info.enrollments.all()
@@ -42,14 +45,26 @@ def dashboard(request):
     else:
         form = OverrideFormSubmission(user=request.user)
 
+    if request.method == "POST" and 'prereg_form' in request.POST:
+        prereg_form = PreRegInfoForm(request.POST, user=request.user)
+        if prereg_form.is_valid():
+            prereg_instance = prereg_form.save(commit=False)
+            prereg_instance.N_id = student_info
+            prereg_instance.save()
+            return redirect('courseEnroll:dashboard')
+
+    else:
+        prereg_form = PreRegInfoForm(user=request.user)
+
     return render(request, 'courseEnroll/dashboard.html', {
         'student_info': student_info,
         'courses': courses,
         'inconsistencies': inconsistencies,
         'enrolled_courses': enrolled_courses,
         'waitlist_courses': waitlist_courses,
-        'override_form_submissions': override_form_submissions,  # Pass previous submissions
-        'form': form,
+        'override_form_submissions': override_form_submissions,
+        'override_form': override_form,
+        'prereg_form': prereg_form,  # Pass the pre-registration form
     })
 
 @login_required
@@ -137,7 +152,7 @@ def select_courses(request):
                         messages.warning(request, f"You are already enrolled in {course.name}.")
                         continue
                     
-                    if total_credits + credit <= 9:
+                    if total_credits + credit <= 12:
                         if capacity > 0:
                             Enrollment.objects.create(student=student_info, course=course, is_waitlisted=False)
                             student_info.course_enrolled.add(course)

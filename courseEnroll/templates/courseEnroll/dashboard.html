@@ -229,6 +229,11 @@
                 {{ form.as_p }}
                 <button type="submit" class="button">Submit Override Request</button>
             </form>
+            <form method="POST" id="preregForm">
+                {% csrf_token %}
+                {{ prereg_form.as_p }}
+                <button type="submit" name="prereg_form">Submit Pre-Registration</button>
+            </form>
             <h3>Previous Override Requests</h3>
             {% if override_form_submissions %}
                 <ul>

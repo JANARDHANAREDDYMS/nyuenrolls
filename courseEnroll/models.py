@@ -1,4 +1,5 @@
 from django.db import models
+
 from django.utils import timezone
 
 class CourseInfo(models.Model):
@@ -82,3 +83,35 @@ class OverrideForm(models.Model):
     @property
     def student_id(self):
         return self.student.N_id
+    
+
+class PreRegInfo(models.Model):
+    student_id = models.OneToOneField(
+            'userprofile.StudentInfo', 
+            on_delete=models.CASCADE, 
+            primary_key=True  
+        )
+    course1 = models.ForeignKey(
+            CourseInfo, 
+            on_delete=models.CASCADE, 
+            related_name='primary_course', 
+            null=True, 
+            blank=True
+        )
+    course2 = models.ForeignKey(
+            CourseInfo, 
+            on_delete=models.CASCADE, 
+            related_name='secondary_course', 
+            null=True, 
+            blank=True
+        )
+    course3 = models.ForeignKey(
+            CourseInfo, 
+            on_delete=models.CASCADE, 
+            related_name='tertiary_course', 
+            null=True, 
+            blank=True
+        )
+
+    def __str__(self):
+            return f"Pre-Registration Info for {self.N_id.name}"

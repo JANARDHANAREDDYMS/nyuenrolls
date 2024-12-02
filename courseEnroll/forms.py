@@ -1,5 +1,5 @@
 from django import forms
-from .models import CourseInfo,OverrideForm
+from .models import CourseInfo,OverrideForm,PreRegInfo
 from userprofile.models import StudentInfo,DepartmentInfo
 from django.utils import timezone
 
@@ -53,3 +53,27 @@ class CourseForm(forms.ModelForm):
     
     start_time = forms.TimeField(widget=forms.TimeInput(format='%H:%M'), required=False)
     end_time = forms.TimeField(widget=forms.TimeInput(format='%H:%M'), required=False)
+
+
+
+class PreRegInfoForm(forms.ModelForm):
+    class Meta:
+        model = PreRegInfo
+        fields = ['course1', 'course2', 'course3']
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)  # Extract the user from kwargs
+        super().__init__(*args, **kwargs)
+
+        if user:
+            try:
+                student = StudentInfo.objects.get(user=user)
+                # Filter courses available for the student
+                self.fields['course1'].queryset = CourseInfo.objects.all()
+                self.fields['course2'].queryset = CourseInfo.objects.all()
+                self.fields['course3'].queryset = CourseInfo.objects.all()
+            except StudentInfo.DoesNotExist:
+                # If no StudentInfo found, set empty queryset
+                self.fields['course1'].queryset = CourseInfo.objects.none()
+                self.fields['course2'].queryset = CourseInfo.objects.none()
+                self.fields['course3'].queryset = CourseInfo.objects.none()
