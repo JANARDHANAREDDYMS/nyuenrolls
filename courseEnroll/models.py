@@ -22,6 +22,7 @@ class CourseInfo(models.Model):
     Instructor = models.OneToOneField('userprofile.FacultyInfo', on_delete=models.SET_NULL, related_name='course', null=True)
     undergrad_capacity = models.IntegerField(blank=True)
     grad_Capacity = models.IntegerField()
+    section =  models.CharField(default='A',max_length=1)
     phd_course_capacity = models.IntegerField()
     class_days = models.CharField(max_length=100, blank=True, null=True, choices=class_days)  
     start_time = models.TimeField(default='09:00:00', blank=True)
