@@ -15,6 +15,7 @@ def dashboard(request):
         student_info = StudentInfo.objects.get(user=request.user)
     except StudentInfo.DoesNotExist:
         return render(request, "userprofile/student_not_found.html", {"error": "Student profile not found."})
+    
     student_department = student_info.department
 
     all_enrollments = student_info.enrollments.all()
@@ -33,26 +34,33 @@ def dashboard(request):
 
     override_form_submissions = OverrideForm.objects.filter(student=student_info)
 
-    # Handle form submission
-    if request.method == "POST":
+    # Initialize the form
+    override_form = None
+    prereg_form = None
+
+    # Handle override form submission
+    if request.method == "POST" and 'override_form' in request.POST:
         form = OverrideFormSubmission(request.POST)
         if form.is_valid():
             override_form = form.save(commit=False)
             override_form.student = student_info  # Attach student to the form
             override_form.save()
             return redirect('courseEnroll:dashboard')  # Redirect to refresh the page
-
+        else:
+            override_form = form  # Pass the invalid form back to the template
     else:
-        form = OverrideFormSubmission(user=request.user)
+        override_form = OverrideFormSubmission(user=request.user)
 
+   # Handle pre-registration form submission
     if request.method == "POST" and 'prereg_form' in request.POST:
         prereg_form = PreRegInfoForm(request.POST, user=request.user)
         if prereg_form.is_valid():
             prereg_instance = prereg_form.save(commit=False)
-            prereg_instance.N_id = student_info
+            prereg_instance.student_id = student_info  # Assign the student_id (foreign key)
             prereg_instance.save()
-            return redirect('courseEnroll:dashboard')
-
+            return redirect('courseEnroll:dashboard')  # Redirect to refresh the page
+        else:
+            prereg_form = PreRegInfoForm(request.POST, user=request.user)  # Pass the invalid form back to the template
     else:
         prereg_form = PreRegInfoForm(user=request.user)
 
