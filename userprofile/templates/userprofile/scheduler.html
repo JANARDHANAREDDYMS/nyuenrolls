@@ -54,7 +54,7 @@
             background-color: #ffffff;
             border-radius: 10px;
             padding: 20px;
-            width: 250px;
+            width: 470px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
@@ -147,9 +147,9 @@
             <h2>NYU Course Scheduler</h2>
         </div>
         <div class="nav-right">
-            <a href="/dashboard">Dashboard</a>
-            <a href="#">Profile</a>
-            <a href="#">Logout</a>
+            <a href="{% url 'courseEnroll:dashboard' %}" class="btn btn-primary btn-lg">Go to Dashboard</a>
+            <a href="{% url 'userprofile:user_profile' %}">Go to User Profile</a>
+            <a href="{% url 'userprofile:logout' %}">Logout</a>
         </div>
     </nav>
 
@@ -198,7 +198,9 @@
             </table>
         </div>
     </div>
-
-    <script src="{% static 'userprofile/scheduler.js' %}"></script>
+<script>
+    const departments = {{ depts|safe }};
+</script>
+<script src="{% static 'userprofile/scheduler.js' %}"></script>
 </body>
 </html>
