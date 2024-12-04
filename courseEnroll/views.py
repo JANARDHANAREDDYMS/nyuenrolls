@@ -6,7 +6,7 @@ from django.contrib import messages
 from userprofile.models import StudentInfo
 from .models import CourseInfo, Enrollment
 from .forms import OverrideFormSubmission,PreRegInfoForm
-from courseEnroll.models import OverrideForm
+from courseEnroll.models import OverrideForm,PreRegInfo
 from django.shortcuts import get_object_or_404
 
 @login_required
@@ -17,7 +17,9 @@ def dashboard(request):
         return render(request, "userprofile/student_not_found.html", {"error": "Student profile not found."})
     
     student_department = student_info.department
-
+    student_points  =student_info.points
+    student_credits =  student_info.credits_left
+    print("Students credits")
     all_enrollments = student_info.enrollments.all()
     courses = CourseInfo.objects.filter(Department=student_department)
 
@@ -31,48 +33,42 @@ def dashboard(request):
     ]
 
     inconsistencies = verify_course_enrollment_consistency()
-
     override_form_submissions = OverrideForm.objects.filter(student=student_info)
 
-    # Initialize the form
-    override_form = None
-    prereg_form = None
+    prereg_form_exists = PreRegInfo.objects.filter(student_id=student_info).exists()
 
-    # Handle override form submission
-    if request.method == "POST" and 'override_form' in request.POST:
-        form = OverrideFormSubmission(request.POST)
-        if form.is_valid():
-            override_form = form.save(commit=False)
-            override_form.student = student_info  # Attach student to the form
-            override_form.save()
-            return redirect('courseEnroll:dashboard')  # Redirect to refresh the page
-        else:
-            override_form = form  # Pass the invalid form back to the template
-    else:
-        override_form = OverrideFormSubmission(user=request.user)
+    # Initialize forms
+    override_form = OverrideFormSubmission(user=request.user)
+    prereg_form = None if prereg_form_exists else PreRegInfoForm(user=request.user)
 
-   # Handle pre-registration form submission
-    if request.method == "POST" and 'prereg_form' in request.POST:
-        prereg_form = PreRegInfoForm(request.POST, user=request.user)
-        if prereg_form.is_valid():
-            prereg_instance = prereg_form.save(commit=False)
-            prereg_instance.student_id = student_info  # Assign the student_id (foreign key)
-            prereg_instance.save()
-            return redirect('courseEnroll:dashboard')  # Redirect to refresh the page
-        else:
-            prereg_form = PreRegInfoForm(request.POST, user=request.user)  # Pass the invalid form back to the template
-    else:
-        prereg_form = PreRegInfoForm(user=request.user)
+    # Handle POST requests
+    if request.method == "POST":
+        if 'override_form' in request.POST:
+            override_form = OverrideFormSubmission(request.POST, user=request.user)
+            if override_form.is_valid():
+                override_instance = override_form.save(commit=False)
+                override_instance.student = student_info
+                override_instance.save()
+                return redirect('courseEnroll:dashboard')  # Refresh the page
+        elif 'prereg_form' in request.POST and not prereg_form_exists:
+            prereg_form = PreRegInfoForm(request.POST, user=request.user)
+            if prereg_form.is_valid():
+                prereg_instance = prereg_form.save(commit=False)
+                prereg_instance.student_id = student_info
+                prereg_instance.save()
+                return redirect('courseEnroll:dashboard')  # Refresh the page
 
     return render(request, 'courseEnroll/dashboard.html', {
         'student_info': student_info,
+        'points_left': student_points,
+        'credits_left':credits,
         'courses': courses,
         'inconsistencies': inconsistencies,
         'enrolled_courses': enrolled_courses,
         'waitlist_courses': waitlist_courses,
         'override_form_submissions': override_form_submissions,
         'override_form': override_form,
-        'prereg_form': prereg_form,  # Pass the pre-registration form
+        'prereg_form': prereg_form,
     })
 
 @login_required
@@ -100,6 +96,8 @@ def select_courses(request):
     if request.method == 'POST':
         student_info = StudentInfo.objects.get(user=request.user)
         student_school = student_info.School
+        student_points  =student_info.points
+        student_credits =  student_info.credits_left
         student_department = student_info.department
         selected_courses = request.POST.getlist('selected_courses')
         edu_level = student_info.Education_Level
