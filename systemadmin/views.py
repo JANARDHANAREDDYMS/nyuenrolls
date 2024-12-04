@@ -2,13 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from userprofile.models import DepartmentInfo,FacultyInfo,StudentInfo
-<<<<<<< HEAD
 from django.http import HttpResponse,JsonResponse
-from courseEnroll.models import CourseInfo, OverrideForm
-=======
-from django.http import HttpResponse
-from courseEnroll.models import CourseInfo, OverrideForm, PreRegInfo
->>>>>>> main
+from courseEnroll.models import CourseInfo, OverrideForm,PreRegInfo
 from datetime import date,datetime
 from django.contrib import messages
 from courseEnroll.forms import OverrideFormSubmission
@@ -182,7 +177,7 @@ def get_course_details(request, course_id):
             'course_id': course.course_id,
             'name': course.name,
             'department_id': course.Department.department_id if course.Department else '',
-            'Instructor': course.Instructor.name if course.Instructor else '',
+            'Instructor': course.Instructor.Name if course.Instructor else '',
             'undergrad_capacity': course.undergrad_capacity,
             'grad_capacity': course.grad_Capacity,
             'phd_course_capacity': course.phd_course_capacity,
