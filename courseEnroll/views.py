@@ -172,6 +172,7 @@ def select_courses(request):
                             Enrollment.objects.create(student=student_info, course=course, is_waitlisted=False)
                             student_info.course_enrolled.add(course)
                             total_enrolled_credits += credit
+                            student_info.credits_left -= credit
                             if edu_level == "Graduate":
                                 course.grad_Capacity -= 1
                             else:
