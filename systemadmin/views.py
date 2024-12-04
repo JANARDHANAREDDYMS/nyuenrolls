@@ -3,10 +3,11 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from userprofile.models import DepartmentInfo,FacultyInfo,StudentInfo
 from django.http import HttpResponse
-from courseEnroll.models import CourseInfo, OverrideForm
+from courseEnroll.models import CourseInfo, OverrideForm, PreRegInfo
 from datetime import date,datetime
 from django.contrib import messages
 from courseEnroll.forms import OverrideFormSubmission
+from django.db.models import Q
 
 
 def admin_required(user):
@@ -24,8 +25,21 @@ def admin_dashboard(request):
 @login_required
 @user_passes_test(admin_required)
 def prereg(request):
+    prereg_data = dict()
+    courses = CourseInfo.objects.all()
+    for course in courses:
+        prereg_data[course.course_id] = dict()
+        prereg_data[course.course_id]["course_id"] = course.course_id
+        prereg_data[course.course_id]["name"] = course.name
+        prereg_data[course.course_id]["Department"] = course.Department.name
+        prereg_data[course.course_id]["capacity"] = course.undergrad_capacity + course.grad_Capacity + course.phd_course_capacity
+        course_count = PreRegInfo.objects.filter(
+            Q(course1=course) | Q(course2=course) | Q(course3=course)
+        ).count()
+
+        prereg_data[course.course_id]["request"] = course_count
     
-    return render(request, 'systemadmin/preregistration.html')
+    return render(request, 'systemadmin/preregistration.html', {'prereg_data': prereg_data})
 
 @login_required
 @user_passes_test(admin_required)
