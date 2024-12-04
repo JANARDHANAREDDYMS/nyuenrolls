@@ -24,7 +24,7 @@
         }
 
         header a {
-            margin-left: 2cm;
+            margin-left: 20px;
             color: white;
             text-decoration: none;
             font-weight: bold;
@@ -157,6 +157,7 @@
     <header>
         <a href="{% url 'userprofile:user_profile' %}">Go to User Profile</a>
         <a href="{% url 'userprofile:scheduler' %}">Course Scheduler</a>
+        <a href="{% url 'userprofile:logout' %}" style="float: right;">Logout</a>
     </header>
 
     <div class="container">

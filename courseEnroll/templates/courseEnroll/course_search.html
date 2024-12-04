@@ -128,8 +128,10 @@
         <!-- <img src="path/to/nyu-logo.png" alt="NYU Logo"> -->
         <a href="{% url 'userprofile:user_profile' %}">Go to User Profile</a>
         <a href="{% url 'userprofile:scheduler' %}">Course Scheduler</a>
+        <a href="{% url 'userprofile:logout' %}" style="float: right;">Logout</a>
     </header>
     <div class="container">
+        <a href="{% url 'courseEnroll:dashboard' %}" style="background-color: #4b007d; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Go Back</a>
         <div class="filter-section">
             <form method="get" action="{% url 'courseEnroll:search_courses' %}">
                 <label for="school">Filter by School:</label>
