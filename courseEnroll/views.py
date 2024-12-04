@@ -16,12 +16,12 @@ def dashboard(request):
     except StudentInfo.DoesNotExist:
         return render(request, "userprofile/student_not_found.html", {"error": "Student profile not found."})
 
-    student_credits = student_info.credits_remaining  
+    student_credits = student_info.credits_left 
     total_enrolled_credits = sum(
         enrollment.course.credits
         for enrollment in student_info.enrollments.filter(is_waitlisted=False)
     )
-    credits_remaining = student_credits - total_enrolled_credits
+    # credits_remaining = student_credits - total_enrolled_credits
 
     student_department = student_info.department
     student_points  =student_info.points
