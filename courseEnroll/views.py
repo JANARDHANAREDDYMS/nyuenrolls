@@ -15,7 +15,14 @@ def dashboard(request):
         student_info = StudentInfo.objects.get(user=request.user)
     except StudentInfo.DoesNotExist:
         return render(request, "userprofile/student_not_found.html", {"error": "Student profile not found."})
-    
+
+    student_credits = student_info.credits_remaining  
+    total_enrolled_credits = sum(
+        enrollment.course.credits
+        for enrollment in student_info.enrollments.filter(is_waitlisted=False)
+    )
+    credits_remaining = student_credits - total_enrolled_credits
+
     student_department = student_info.department
     student_points  =student_info.points
     student_credits =  student_info.credits_left
@@ -24,11 +31,11 @@ def dashboard(request):
     courses = CourseInfo.objects.filter(Department=student_department)
 
     enrolled_courses = [
-        {'course': enrollment.course, 'created_at': enrollment.created_at} 
+        {'course': enrollment.course, 'created_at': enrollment.created_at}
         for enrollment in all_enrollments if not enrollment.is_waitlisted
     ]
     waitlist_courses = [
-        {'course': enrollment.course, 'created_at': enrollment.created_at} 
+        {'course': enrollment.course, 'created_at': enrollment.created_at}
         for enrollment in all_enrollments if enrollment.is_waitlisted
     ]
 
@@ -101,23 +108,25 @@ def select_courses(request):
         student_department = student_info.department
         selected_courses = request.POST.getlist('selected_courses')
         edu_level = student_info.Education_Level
-        total_credits = sum(
+        total_enrolled_credits = sum(
             enrollment.course.credits 
             for enrollment in student_info.enrollments.filter(is_waitlisted=False)
         )
         action = request.POST.get('action', 'enroll')
 
-        with transaction.atomic():  
+        with transaction.atomic():  # Ensure database consistency
             for course_id in selected_courses:
                 course = CourseInfo.objects.get(course_id=course_id)
                 credit = course.credits
 
                 print(f"Checking course: {course.name}, Capacity: {course.undergrad_capacity if edu_level == 'Undergraduate' else course.grad_Capacity if edu_level == 'Graduate' else course.phd_course_capacity}")
                 
+                # Verify if course is in the student's school
                 if course.school != student_school:
                     messages.error(request, f"{course.name} is not offered by your school ({student_school}). Please contact your advisor.")
                     continue
                 
+                # Verify if course is in the student's department or override is approved
                 if course.Department != student_department:
                     override = OverrideForm.objects.filter(
                         student=student_info, course_code=course, status='Approved'
@@ -131,6 +140,7 @@ def select_courses(request):
                         )
                         continue
 
+                # Determine course capacity based on education level
                 if edu_level == "Graduate":
                     capacity = course.grad_Capacity
                 else:
@@ -139,12 +149,10 @@ def select_courses(request):
                 is_waitlisted = Enrollment.objects.filter(
                     student=student_info, course=course, is_waitlisted=True
                 ).exists()
+
                 print(f"Is {course.name} already waitlisted? {is_waitlisted}")
 
-                if is_waitlisted:
-                    messages.error(request, f"You are already waitlisted for {course.name}.")
-                    continue
-
+                # Handle waitlist action
                 if action == 'waitlist' and not is_waitlisted:
                     if not Enrollment.objects.filter(student=student_info, course=course, is_waitlisted=False).exists():
                         Enrollment.objects.create(student=student_info, course=course, is_waitlisted=True)
@@ -152,24 +160,25 @@ def select_courses(request):
                         messages.success(request, f"You have been added to the waitlist for {course.name}.")
                     else:
                         messages.error(request, f"You are already enrolled in {course.name}.")
-                elif action == 'enroll':
+                elif action == 'enroll':  # Handle enroll action
                     if (Enrollment.objects.filter(student=student_info, course=course, is_waitlisted=False).exists() 
                         or course in student_info.course_enrolled.all()):
                         messages.warning(request, f"You are already enrolled in {course.name}.")
                         continue
                     
-                    if total_credits + credit <= 12:
+                    # Check for credit limit before enrolling
+                    if total_enrolled_credits + credit <= 12:
                         if capacity > 0:
                             Enrollment.objects.create(student=student_info, course=course, is_waitlisted=False)
                             student_info.course_enrolled.add(course)
-                            total_credits += credit
+                            total_enrolled_credits += credit
                             if edu_level == "Graduate":
                                 course.grad_Capacity -= 1
                             else:
                                 course.phd_course_capacity -= 1
                             course.save()
                             messages.success(request, f"Successfully enrolled in {course.name}.")
-                        else:
+                        else:  # Handle full capacity
                             if course.to_waitlist:
                                 Enrollment.objects.create(student=student_info, course=course, is_waitlisted=True)
                                 student_info.course_enrolled.add(course)
@@ -177,11 +186,16 @@ def select_courses(request):
                             else:
                                 messages.error(request, f"Capacity for {course.name} is full. Try waitlisting.")
                     else:
-                        messages.error(request, "You have reached your course credit limit of 9.")
+                        messages.error(
+                            request,
+                            f"Enrolling in {course.name} exceeds your 12-credit limit. "
+                            f"Currently enrolled: {total_enrolled_credits} credits."
+                        )
 
         student_info.save()
 
     return redirect('courseEnroll:dashboard')
+
 
 @login_required
 def delete_selected_courses(request):

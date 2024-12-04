@@ -166,6 +166,10 @@
             <h1>Welcome, {{ student_info.Name }}</h1>
         </div>
 
+        <div>
+            <h3 style="color: #57068c; text-align: center;">Credits Remaining: {{ credits_remaining }}</h3>
+        </div>
+
         {% if messages %}
         <script type="text/JavaScript">
             {% for message in messages %}
