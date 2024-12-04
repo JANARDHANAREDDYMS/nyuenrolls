@@ -81,12 +81,18 @@ thead {
 }
 
 .course-block {
-    background-color: #ffc107;
+    background-color: #21de83;
     color: black;
     padding: 5px;
     border-radius: 5px;
 }
-
+.time-conflict {
+    background-color: #ff4444; 
+    color: white;
+    padding: 5px;
+    border-radius: 5px;
+    margin: 2px 0;
+}
 #course-selector > div {
     margin-bottom: 10px;
 }

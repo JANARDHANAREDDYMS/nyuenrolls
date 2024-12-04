@@ -8,6 +8,9 @@ class OverrideFormSubmission(forms.ModelForm):
     class Meta:
         model = OverrideForm
         fields = ['course_code', 'explanation']
+        widgets = {
+            'explanation': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Provide a detailed explanation...'}),
+        }
     
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)  # Extract the user from kwargs

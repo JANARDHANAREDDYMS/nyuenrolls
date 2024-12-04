@@ -14,15 +14,17 @@
         }
 
         header {
-            display: flex;
+            display: auto;
             align-items: center;
             justify-content: space-between;
+            flex-direction: row; /* Align items horizontally */
             background-color: #57068c; /* NYU Violet */
             color: white;
             padding: 10px 20px;
         }
 
         header a {
+            margin-left: 20px;
             color: white;
             text-decoration: none;
             font-weight: bold;
@@ -145,7 +147,7 @@
             }
 
             header {
-                flex-direction: column;
+                flex-direction: row;
                 align-items: flex-start;
             }
         }
@@ -154,12 +156,15 @@
 <body>
     <header>
         <a href="{% url 'userprofile:user_profile' %}">Go to User Profile</a>
+        <a href="{% url 'userprofile:scheduler' %}">Course Scheduler</a>
+        <a href="{% url 'userprofile:logout' %}" style="float: right;">Logout</a>
     </header>
 
     <div class="container">
         <!-- Welcome Section -->
         <div class="welcome-section">
             <h1>Welcome, {{ student_info.Name }}</h1>
+            <h3>{{ credits_left }}</h3>
         </div>
 
         {% if messages %}
@@ -221,19 +226,21 @@
     </div>
     <div class="container">
         <button class="button" onclick="toggleForm('override-form')">Fill Override Form</button>
-        <div class="form-section" id="override-form">
+        <div class="form-section" id="override-form" style="display: none;">
             <h2>Override Form Request</h2>
             <h3>Submit a New Override Request</h3>
-            <form method="post">
+            <form method="POST">
                 {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="button">Submit Override Request</button>
+                {{ override_form.as_p }}
+                <button type="submit" name="override_form">Submit Override Form</button>
             </form>
-            <form method="POST" id="preregForm">
-                {% csrf_token %}
-                {{ prereg_form.as_p }}
-                <button type="submit" name="prereg_form">Submit Pre-Registration</button>
-            </form>
+            {% if override_form.errors %}
+                <ul class="error-list">
+                    {% for field, errors in override_form.errors.items %}
+                        <li>{{ field }}: {{ errors|join:", " }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
             <h3>Previous Override Requests</h3>
             {% if override_form_submissions %}
                 <ul>
@@ -246,9 +253,28 @@
                     {% endfor %}
                 </ul>
             {% else %}
-                <p>No previous override requests found.</p>
+                <p class="empty-state">No previous override requests found.</p>
             {% endif %}
-        </div>
+        </div>    
+    </div>
+    <div class="container">
+        <h3>Pre-Registration Form</h3>
+        {% if prereg_form_exists %}
+            <p style="color: green;">You have already submitted the Pre-Registration Form.</p>
+        {% else %}
+            <form method="POST">
+                {% csrf_token %}
+                {{ prereg_form.as_p }}
+                <button type="submit" name="prereg_form" class="button">Submit Pre-Registration Form</button>
+            </form>
+            {% if prereg_form.errors %}
+                <ul class="error-list">
+                    {% for field, errors in prereg_form.errors.items %}
+                        <li>{{ field }}: {{ errors|join:", " }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endif %}
     </div>
     <footer>
         <p>&copy; 2024 NYU ENROLLS</p>

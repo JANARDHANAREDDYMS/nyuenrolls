@@ -23,6 +23,8 @@ class StudentInfo(models.Model):
     semester = models.CharField(max_length=20, choices=semester_choices, default="1st Sem")
     Phone_no = models.CharField(max_length=15)  
     School = models.CharField(max_length=50, choices=Schools)
+    points =  models.IntegerField(default=100)
+    credits_left = models.IntegerField(default=12)
     is_ta = models.BooleanField(default=False)
     ta_course = models.ForeignKey('courseEnroll.CourseInfo', null=True, blank=True, related_name='tas', on_delete=models.SET_NULL)  # Use app label 'coursenroll'
     course_enrolled = models.ManyToManyField('courseEnroll.CourseInfo', related_name='enrolled_students')  # Use app label 'coursenroll'

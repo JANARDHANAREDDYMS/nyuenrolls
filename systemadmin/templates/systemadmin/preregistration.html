@@ -188,8 +188,7 @@
                     <th style="width: 15%;">Course Code</th>
                     <th style="width: 35%;">Course Name</th>
                     <th style="width: 20%;">Department</th>
-                    <th style="width: 10%;">In Dept. Requests</th>
-                    <th style="width: 10%;">Out Dept. Requests</th>
+                    <th style="width: 10%;">Course Capacity</th>
                     <th style="width: 10%;">Requests</th>
                 </tr>
             </thead>
@@ -203,22 +202,17 @@
     </div>
 
     <script>
-        const courses = Array.from({ length: 30 }, (_, i) => {
-            const departmentOptions = ["Computer Science", "Mechanical Engineering", "Theatre"];
-            const department = departmentOptions[i % 3];
-            const courseCodePrefix = department === "Computer Science" ? "CS-GY" : department === "Mechanical Engineering" ? "ME-GY" : "TH-GY";
-            const in_department_requests = Math.floor(Math.random() * 100);
-            const out_department_requests = Math.floor(Math.random() * 50);
-
-            return {
-                courseCode: `${courseCodePrefix}${String(i + 101).padStart(3, '0')}`,
-                courseName: `Course ${i + 1}`,
-                department: department,
-                in_department_requests: in_department_requests,
-                out_department_requests: out_department_requests,
-                requests: in_department_requests + out_department_requests,
-            };
-        });
+        // Get the data passed from Django view (prereg_data)
+        const preregData = {{ prereg_data|safe }};
+        
+        // Convert the Django dictionary to an array for easier manipulation
+        const courses = Object.values(preregData).map(course => ({
+            courseCode: course.course_id,
+            courseName: course.name,
+            department: course.Department,
+            capacity: course.capacity,
+            requests: course.request
+        }));
 
         const itemsPerPage = 10;
         let currentPage = 1;
@@ -255,8 +249,7 @@
                     <td>${course.courseCode}</td>
                     <td>${course.courseName}</td>
                     <td>${course.department}</td>
-                    <td>${course.in_department_requests}</td>
-                    <td>${course.out_department_requests}</td>
+                    <td>${course.capacity}</td>
                     <td>${course.requests}</td>
                 </tr>`;
                 tableBody.insertAdjacentHTML('beforeend', row);
