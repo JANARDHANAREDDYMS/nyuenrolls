@@ -13,9 +13,10 @@
             color: #333;
         }
         header {
-            display: flex;
+            display: auto;
             align-items: center;
             justify-content: space-between;
+            flex-direction: row; /* Align items horizontally */
             background-color: #4b007d;
             color: white;
             padding: 10px 20px;
@@ -126,6 +127,7 @@
     <header>
         <!-- <img src="path/to/nyu-logo.png" alt="NYU Logo"> -->
         <a href="{% url 'userprofile:user_profile' %}">Go to User Profile</a>
+        <a href="{% url 'userprofile:scheduler' %}">Course Scheduler</a>
     </header>
     <div class="container">
         <div class="filter-section">

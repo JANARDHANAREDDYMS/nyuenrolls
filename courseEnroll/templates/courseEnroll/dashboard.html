@@ -14,15 +14,17 @@
         }
 
         header {
-            display: flex;
+            display: auto;
             align-items: center;
             justify-content: space-between;
+            flex-direction: row; /* Align items horizontally */
             background-color: #57068c; /* NYU Violet */
             color: white;
             padding: 10px 20px;
         }
 
         header a {
+            margin-left: 2cm;
             color: white;
             text-decoration: none;
             font-weight: bold;
@@ -145,7 +147,7 @@
             }
 
             header {
-                flex-direction: column;
+                flex-direction: row;
                 align-items: flex-start;
             }
         }
@@ -154,6 +156,7 @@
 <body>
     <header>
         <a href="{% url 'userprofile:user_profile' %}">Go to User Profile</a>
+        <a href="{% url 'userprofile:scheduler' %}">Course Scheduler</a>
     </header>
 
     <div class="container">
