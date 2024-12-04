@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Course Scheduler</title>
-    <link rel="stylesheet" href="{% static 'userprofile/scheduler.css' %}">
     <style>
         /* General Reset */
         body {
@@ -60,7 +59,7 @@
 
         .sidebar button {
             width: 100%;
-            background-color: #57068c; /* NYU Violet */
+            background-color: #57068c;
             color: white;
             font-size: 14px;
             font-weight: bold;
@@ -68,14 +67,15 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            margin-bottom: 10px;
         }
 
         .sidebar button:hover {
-            background-color: #4b007d; /* Dark Violet */
+            background-color: #4b007d;
         }
 
         .sidebar h3 {
-            color: #57068c; /* NYU Violet */
+            color: #57068c;
             font-size: 18px;
             margin-top: 20px;
         }
@@ -92,6 +92,37 @@
             background-color: #f4f4f4;
             border-radius: 5px;
             font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Course selector styling */
+        #course-selector {
+            margin-top: 15px;
+        }
+
+        #course-selector.hidden {
+            display: none;
+        }
+
+        #course-selector div {
+            margin-bottom: 15px;
+        }
+
+        #course-selector label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        #course-selector select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
         }
 
         /* Scheduler Styling */
@@ -101,11 +132,13 @@
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
         }
 
         .scheduler table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 800px;
         }
 
         .scheduler th,
@@ -114,15 +147,59 @@
             text-align: center;
             padding: 10px;
             font-size: 14px;
+            position: relative;
+            vertical-align: top;
         }
 
         .scheduler th {
-            background-color: #57068c; /* NYU Violet */
+            background-color: #57068c;
             color: white;
+            font-weight: bold;
         }
 
         .scheduler td {
             background-color: #f9f9f9;
+            height: 30px;
+        }
+
+        /* Course block styling */
+        .course-block {
+            background-color: #3cbf75 !important;
+            color: black;
+            padding: 5px;
+            border-radius: 5px;
+            margin: 2px 0;
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .time-conflict {
+            background-color: #ff4444 !important;
+            color: white;
+            padding: 5px;
+            border-radius: 5px;
+            margin: 2px 0;
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* Remove button styling */
+        .course-entry button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .course-entry button:hover {
+            background-color: #c82333;
         }
 
         /* Responsive Design */
@@ -147,14 +224,13 @@
             <h2>NYU Course Scheduler</h2>
         </div>
         <div class="nav-right">
-            <a href="{% url 'courseEnroll:dashboard' %}" class="btn btn-primary btn-lg">Go to Dashboard</a>
+            <a href="{% url 'courseEnroll:dashboard' %}">Go to Dashboard</a>
             <a href="{% url 'userprofile:user_profile' %}">Go to User Profile</a>
             <a href="{% url 'userprofile:logout' %}">Logout</a>
         </div>
     </nav>
 
     <div class="container">
-        <!-- Sidebar -->
         <div class="sidebar">
             <button id="add-course-btn">Add Course</button>
             <div id="course-selector" class="hidden">
@@ -162,23 +238,19 @@
                     <label for="departments">Select Department:</label>
                     <select id="departments" class="form-control"></select>
                 </div>
-            
                 <div>
                     <label for="courses">Select Course:</label>
                     <select id="courses" class="form-control" disabled></select>
                 </div>
-            
                 <div>
                     <label for="sections">Select Section:</label>
                     <select id="sections" class="form-control" disabled></select>
                 </div>
             </div>
-
             <h3>Selected Courses</h3>
             <ul id="selected-courses"></ul>
         </div>
 
-        <!-- Scheduler -->
         <div class="scheduler">
             <table>
                 <thead>
@@ -193,14 +265,15 @@
                     </tr>
                 </thead>
                 <tbody id="schedule-body">
-                    <!-- Scheduler rows go here -->
+                    <!-- Schedule rows will be added dynamically via JavaScript -->
                 </tbody>
             </table>
         </div>
     </div>
-<script>
-    const departments = {{ depts|safe }};
-</script>
-<script src="{% static 'userprofile/scheduler.js' %}"></script>
+
+    <script>
+        const departments = {{ depts|safe }};
+    </script>
+    <script src="{% static 'userprofile/scheduler.js' %}"></script>
 </body>
 </html>

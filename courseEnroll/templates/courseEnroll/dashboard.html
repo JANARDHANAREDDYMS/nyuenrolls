@@ -164,6 +164,7 @@
         <!-- Welcome Section -->
         <div class="welcome-section">
             <h1>Welcome, {{ student_info.Name }}</h1>
+            <h3>{{ credits_left }}</h3>
         </div>
 
         {% if messages %}
@@ -258,17 +259,21 @@
     </div>
     <div class="container">
         <h3>Pre-Registration Form</h3>
-        <form method="POST">
-            {% csrf_token %}
-            {{ prereg_form.as_p }}
-            <button type="submit" name="prereg_form">Submit Pre-Registration Form</button>
-        </form>
-        {% if prereg_form.errors %}
-            <ul class="error-list">
-                {% for field, errors in prereg_form.errors.items %}
-                    <li>{{ field }}: {{ errors|join:", " }}</li>
-                {% endfor %}
-            </ul>
+        {% if prereg_form_exists %}
+            <p style="color: green;">You have already submitted the Pre-Registration Form.</p>
+        {% else %}
+            <form method="POST">
+                {% csrf_token %}
+                {{ prereg_form.as_p }}
+                <button type="submit" name="prereg_form" class="button">Submit Pre-Registration Form</button>
+            </form>
+            {% if prereg_form.errors %}
+                <ul class="error-list">
+                    {% for field, errors in prereg_form.errors.items %}
+                        <li>{{ field }}: {{ errors|join:", " }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
         {% endif %}
     </div>
     <footer>

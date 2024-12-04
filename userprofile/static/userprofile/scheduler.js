@@ -122,45 +122,72 @@ coursesDropdown.addEventListener("change", () => {
 
 // Add selected course to the list and display in scheduler
 sectionsDropdown.addEventListener("change", () => {
+    console.log("Section changed"); // Debug log
+    
     const selectedDept = departmentsDropdown.value;
     const selectedCourseName = coursesDropdown.value;
     const selectedSection = sectionsDropdown.value;
+
+    console.log("Selected values:", { selectedDept, selectedCourseName, selectedSection }); // Debug log
+
+    if (!selectedDept || !selectedCourseName || !selectedSection) {
+        console.log("Missing selection"); // Debug log
+        return;
+    }
 
     const courseIdentifier = `${selectedCourseName} (Section ${selectedSection})`;
 
     // Check if the maximum number of courses (6) has been reached
     if (addedCourses.size >= 6) {
         alert("You cannot add more than 6 courses at the same time.");
-        return; // Exit if the limit is reached
+        return;
     }
 
     if (addedCourses.has(courseIdentifier)) {
         alert("This course has already been added.");
-        return; // Exit if the course is already added
+        return;
     }
 
+    // Find the course in the departments data
     const course = departments[selectedDept].find((c) => c.name === selectedCourseName);
+    console.log("Found course:", course); // Debug log
 
     if (course) {
+        const sectionIndex = course.sections.indexOf(selectedSection);
+        console.log("Section index:", sectionIndex); // Debug log
+
+        // Only proceed if we found a valid section index
+        if (sectionIndex === -1) {
+            console.log("Invalid section index"); // Debug log
+            return;
+        }
+
+        // Create list item for selected courses
         const li = document.createElement("li");
         li.classList.add("course-entry");
-        const sectionIndex = course.sections.indexOf(selectedSection);
         li.textContent = `${course.name} (Section ${selectedSection}, ${course.day[sectionIndex]}, ${course.start[sectionIndex]}:${course.start_mins[sectionIndex]} - ${course.end[sectionIndex]}:${course.end_mins[sectionIndex]})`;
 
+        // Create remove button
         const removeBtn = document.createElement("button");
         removeBtn.textContent = "Remove";
         removeBtn.addEventListener("click", () => {
             li.remove();
             removeCourseFromSchedule(course, sectionIndex);
-            addedCourses.delete(courseIdentifier); // Remove from added courses
+            addedCourses.delete(courseIdentifier);
         });
 
+        // Add the course to the UI
         li.appendChild(removeBtn);
         selectedCoursesList.appendChild(li);
 
+        // Add course to schedule and track it
         addCourseToSchedule(course, sectionIndex);
-        addedCourses.add(courseIdentifier); // Add to added courses
-        closeCourseSelector(); // Close the course selector
+        addedCourses.add(courseIdentifier);
+
+        // Reset selectors
+        closeCourseSelector();
+    } else {
+        console.log("Course not found"); // Debug log
     }
 });
 
@@ -173,28 +200,58 @@ function closeCourseSelector() {
     departmentsDropdown.selectedIndex = 0; // Reset department selection
 }
 
-// Display the course on the schedule
 function addCourseToSchedule(course, sectionIndex) {
     const rows = scheduleBody.querySelectorAll("tr");
     const startHour = course.start[sectionIndex];
     const endHour = course.end[sectionIndex];
-    const startMin = course.start_mins[sectionIndex] === "30" ? 1 : 0; // "30" -> 1 for half hour
-    const endMin = course.end_mins[sectionIndex] === "30" ? 1 : 0; // "30" -> 1 for half hour
+    const startMin = course.start_mins[sectionIndex] === "30" ? 1 : 0;
+    const endMin = course.end_mins[sectionIndex] === "30" ? 1 : 0;
     
-    const startRow = (startHour - 8) * 2 + startMin; // Adjust for the 8 AM starting row
-    const endRow = (endHour - 8) * 2 + endMin; // Adjust for the 8 AM starting row
+    const startRow = (startHour - 8) * 2 + startMin;
+    const endRow = (endHour - 8) * 2 + endMin;
     
     for (let i = startRow; i < endRow; i++) {
         const cell = rows[i].querySelector(`td:nth-child(${getDayIndex(course.day[sectionIndex])})`);
         
-        // Create a new div for the course block
+        // Check for existing blocks
+        const existingBlocks = cell.querySelectorAll('div');
+        
+        // Create new course block
         const courseBlock = document.createElement("div");
-        courseBlock.classList.add("course-block");
         courseBlock.textContent = course.name;
         
-        // Append the new course block to the existing content in the cell
+        if (existingBlocks.length > 0) {
+            // If there are existing blocks, make everything red
+            courseBlock.className = 'time-conflict';
+            existingBlocks.forEach(block => {
+                block.className = 'time-conflict';
+            });
+        } else {
+            // If no existing blocks, make it yellow
+            courseBlock.className = 'course-block';
+        }
+        
         cell.appendChild(courseBlock);
     }
+}
+
+function checkTimeConflict(course, sectionIndex) {
+    const rows = scheduleBody.querySelectorAll("tr");
+    const startHour = course.start[sectionIndex];
+    const endHour = course.end[sectionIndex];
+    const startMin = course.start_mins[sectionIndex] === "30" ? 1 : 0;
+    const endMin = course.end_mins[sectionIndex] === "30" ? 1 : 0;
+    
+    const startRow = (startHour - 8) * 2 + startMin;
+    const endRow = (endHour - 8) * 2 + endMin;
+    
+    for (let i = startRow; i < endRow; i++) {
+        const cell = rows[i].querySelector(`td:nth-child(${getDayIndex(course.day[sectionIndex])})`);
+        if (cell.querySelectorAll('.course-block').length > 0) {
+            return true; // Conflict found
+        }
+    }
+    return false; // No conflict
 }
 
 

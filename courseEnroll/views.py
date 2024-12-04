@@ -19,7 +19,7 @@ def dashboard(request):
     student_department = student_info.department
     student_points  =student_info.points
     student_credits =  student_info.credits_left
-    print("Students credits")
+    print("Students credits",student_credits)
     all_enrollments = student_info.enrollments.all()
     courses = CourseInfo.objects.filter(Department=student_department)
 
@@ -61,10 +61,11 @@ def dashboard(request):
     return render(request, 'courseEnroll/dashboard.html', {
         'student_info': student_info,
         'points_left': student_points,
-        'credits_left':credits,
+        'credits_left':student_credits,
         'courses': courses,
         'inconsistencies': inconsistencies,
         'enrolled_courses': enrolled_courses,
+        'prereg_form_exists':prereg_form_exists,
         'waitlist_courses': waitlist_courses,
         'override_form_submissions': override_form_submissions,
         'override_form': override_form,
