@@ -68,7 +68,7 @@ def dashboard(request):
     return render(request, 'courseEnroll/dashboard.html', {
         'student_info': student_info,
         'points_left': student_points,
-        'credits_left':credits,
+        'credits_left':student_credits,
         'courses': courses,
         'inconsistencies': inconsistencies,
         'enrolled_courses': enrolled_courses,
