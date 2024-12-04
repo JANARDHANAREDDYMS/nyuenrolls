@@ -241,21 +241,36 @@
             <h2>Add Course</h2>
             <form id="addCourseForm" method="POST" action="{% url 'systemadmin:course_add' %}">
                 {% csrf_token %}
-
+            
+                <!-- Course ID -->
                 <input type="text" id="courseId" name="courseId" placeholder="Course ID" required>
+            
+                <!-- Course Name -->
                 <input type="text" id="courseName" name="courseName" placeholder="Course Name" required>
             
+                <!-- Select Department -->
                 <select id="department" name="department" required>
                     <option value="">Select Department</option>
                     {% for dept in departments %}
                         <option value="{{ dept.department_id }}">{{ dept.name }}</option>
                     {% endfor %}
                 </select>
-
-                <input type="text" id="instructor" name="instructor" placeholder="Instructor" required>
-                <input type="number" id="capacity" name="capacity" placeholder="Capacity" required min="0" oninput="validity.valid||(value='');">
+            
+                <!-- Select Instructor -->
+                <input type="text" id="instructor" name="instructor" placeholder="Instructor Name" required>
+            
+                <!-- Undergraduate Capacity -->
+                <input type="number" id="undergradCapacity" name="undergradCapacity" placeholder="Undergrad Capacity" required min="0" oninput="validity.valid||(value='');">
+            
+                <!-- Graduate Capacity -->
+                <input type="number" id="gradCapacity" name="gradCapacity" placeholder="Graduate Capacity" required min="0" oninput="validity.valid||(value='');">
+            
+                <!-- PhD Student Seats -->
                 <input type="number" id="phdSeats" name="phdSeats" placeholder="PhD Student Seats" required min="0" oninput="validity.valid||(value='');">
-
+            
+                <!-- Section -->
+                <input type="text" id="section" name="section" placeholder="Section" maxlength="1" required>
+            
                 <!-- Class Day Dropdown -->
                 <select id="classDay" name="classDay" required>
                     <option value="">Select Class Day</option>
@@ -267,11 +282,34 @@
                     <option value="Saturday">Saturday</option>
                     <option value="Sunday">Sunday</option>
                 </select>
-                <input type="text" id="classTime" name="classTime" placeholder="Class Time" required>
+            
+                <!-- Start Time -->
+                <label for="startTime">Start Time:</label>
+                <input type="time" id="startTime" name="startTime" required>
+            
+                <!-- End Time -->
+                <label for="endTime">End Time:</label>
+                <input type="time" id="endTime" name="endTime" required>
+            
+                <!-- Course Description -->
                 <textarea id="courseDescription" name="courseDescription" placeholder="Course Description" rows="4" maxlength="1000"></textarea>
-                <input type="number" id="credits" name="credits" placeholder="Credits" required min="0" oninput="validity.valid||(value='');">
-                <button class="add-button" onclick="addCourse()">Add Course</button>
+            
+                <!-- To Waitlist -->
+                <label for="toWaitlist">Enable Waitlist:</label>
+                <input type="checkbox" id="toWaitlist" name="toWaitlist">
+            
+                <!-- Points Assigned -->
+                <input type="number" id="pointsAssigned" name="pointsAssigned" placeholder="Points Assigned" min="0" oninput="validity.valid||(value='');">
+            
+                <!-- Credits -->
+                <input type="number" id="credits" name="credits" placeholder="Credits" required min="0" step="0.1" oninput="validity.valid||(value='');">
+            
+                <!-- Waitlist Capacity -->
+                <input type="number" id="waitlistCapacity" name="waitlistCapacity" placeholder="Waitlist Capacity" required min="0" oninput="validity.valid||(value='');">
+            
+                <button class="add-button" type="submit">Add Course</button>
             </form>
+            
         </div>
     </div>
 
@@ -282,10 +320,10 @@
             <h2>Modify Courses</h2>
             <div class="course-list" id="courseList">
                 {% for course in courses %}
-                    <div class="course-item">
+                    <div class="course-item" data-course-id="{{ course.course_id }}">
                         <span>{{ course.course_id }}: {{ course.name }}</span>
                         <div>
-                            <button class="update-button" onclick="updateCourse('{{ course.course_id }}')">Update</button>
+                            <button class="update-button" onclick="openEditCourseForm('{{ course.course_id }}')">Update</button>
                             <button class="delete-button" onclick="deleteCourse('{{ course.course_id }}')">Delete</button>
                         </div>
                     </div>
@@ -293,9 +331,79 @@
             </div>
         </div>
     </div>
+    <div id="editCourseModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeEditCourseModal()">&times;</span>
+            <h2>Edit Course</h2>
+            <form id="editCourseForm" method="POST" action="{% url 'systemadmin:course_update' %}">
+                {% csrf_token %}
+                <input type="hidden" id="editCourseId" name="courseId">
+                <input type="text" id="editCourseName" name="courseName" placeholder="Course Name" required>
+                <select id="editDepartment" name="department" required>
+                    <option value="">Select Department</option>
+                    {% for dept in departments %}
+                        <option value="{{ dept.department_id }}">{{ dept.name }}</option>
+                    {% endfor %}
+                </select>
+                <input type="text" id="editInstructor" name="instructor" placeholder="Instructor Name" required>
+                <input type="number" id="editUndergradCapacity" name="undergradCapacity" placeholder="Undergrad Capacity" required min="0">
+                <input type="number" id="editGradCapacity" name="gradCapacity" placeholder="Graduate Capacity" required min="0">
+                <input type="number" id="editPhdSeats" name="phdSeats" placeholder="PhD Student Seats" required min="0">
+                <input type="text" id="editSection" name="section" placeholder="Section" maxlength="1" required>
+                <select id="editClassDay" name="classDay" required>
+                    <option value="">Select Class Day</option>
+                    <option value="Monday">Monday</option>
+                    <option value="Tuesday">Tuesday</option>
+                    <option value="Wednesday">Wednesday</option>
+                    <option value="Thursday">Thursday</option>
+                    <option value="Friday">Friday</option>
+                    <option value="Saturday">Saturday</option>
+                    <option value="Sunday">Sunday</option>
+                </select>
+                <input type="time" id="editStartTime" name="startTime" required>
+                <input type="time" id="editEndTime" name="endTime" required>
+                <textarea id="editCourseDescription" name="courseDescription" placeholder="Course Description" rows="4" maxlength="1000"></textarea>
+                <label for="editToWaitlist">Enable Waitlist:</label>
+                <input type="checkbox" id="editToWaitlist" name="toWaitlist">
+                <input type="number" id="editPointsAssigned" name="pointsAssigned" placeholder="Points Assigned" min="0">
+                <input type="number" id="editCredits" name="credits" placeholder="Credits" required min="0" step="0.1">
+                <input type="number" id="editWaitlistCapacity" name="waitlistCapacity" placeholder="Waitlist Capacity" required min="0">
+                <button class="add-button" type="submit">Save Changes</button>
+            </form>
+        </div>
+    </div>
     
 
     <script>
+        async function getCourseDetails(courseId) {
+    try {
+        // Fetch course details from the API
+        const response = await fetch(`/systemadmin/course_details/${courseId}/`);
+
+        if (!response.ok) {
+            // Handle HTTP errors
+            throw new Error(`HTTP error: ${response.status} ${response.statusText}`);
+        }
+
+        // Parse the JSON response
+        let course;
+        try {
+            course = await response.json();
+        } catch (jsonError) {
+            throw new Error('Invalid JSON response from the server.');
+        }
+
+        return course;
+    } catch (error) {
+        // Log the full error to the console for debugging
+        console.error('Error fetching course details:', error);
+
+        // Show a user-friendly error message
+        alert(`Failed to fetch course details: ${error.message}`);
+        return null;
+    }
+}
+
         document.getElementById("manage-prereg").addEventListener("click", function() {
             window.location.href = "{% url 'systemadmin:prereg' %}";
         });
@@ -342,65 +450,102 @@
 
         // Function to handle adding the course
         function addCourse() {
-            // Clear previous error highlights
-            clearErrorHighlights();
+    // Clear previous error highlights
+    clearErrorHighlights();
 
-            const courseId = document.getElementById('courseId').value;
-            const courseName = document.getElementById('courseName').value;
-            const department = document.getElementById('department').value;
-            const instructor = document.getElementById('instructor').value;
-            const capacity = document.getElementById('capacity').value;
-            const phdSeats = document.getElementById('phdSeats').value;
-            const classDay = document.getElementById('classDay').value;
-            const classTime = document.getElementById('classTime').value;
-            const courseDescription = document.getElementById('courseDescription').value;
-            const credits = document.getElementById('credits').value;
+    // Fetch values from the form
+    const courseId = document.getElementById('courseId').value;
+    const courseName = document.getElementById('courseName').value;
+    const department = document.getElementById('department').value;
+    const instructor = document.getElementById('instructor').value;
+    const undergradCapacity = document.getElementById('undergradCapacity').value;
+    const gradCapacity = document.getElementById('gradCapacity').value;
+    const phdSeats = document.getElementById('phdSeats').value;
+    const section = document.getElementById('section').value;
+    const classDay = document.getElementById('classDay').value;
+    const startTime = document.getElementById('startTime').value;
+    const endTime = document.getElementById('endTime').value;
+    const courseDescription = document.getElementById('courseDescription').value;
+    const toWaitlist = document.getElementById('toWaitlist').checked; // Checkbox
+    const pointsAssigned = document.getElementById('pointsAssigned').value;
+    const credits = document.getElementById('credits').value;
+    const waitlistCapacity = document.getElementById('waitlistCapacity').value;
 
-            let hasError = false;
+    let hasError = false;
 
-            // Check for empty fields (except description)
-            if (!courseId) {
-                highlightField('courseId');
-                hasError = true;
-            }
-            if (!courseName) {
-                highlightField('courseName');
-                hasError = true;
-            }
-            if (!department) {
-                highlightField('department');
-                hasError = true;
-            }
-            if (!instructor) {
-                highlightField('instructor');
-                hasError = true;
-            }
-            if (capacity === '') {
-                highlightField('capacity');
-                hasError = true;
-            }
-            if (phdSeats === '') {
-                highlightField('phdSeats');
-                hasError = true;
-            }
-            if (!classDay) {
-                highlightField('classDay');
-                hasError = true;
-            }
-            if (!classTime) {
-                highlightField('classTime');
-                hasError = true;
-            }
-            if (credits === '') {
-                highlightField('credits');
-                hasError = true;
-            }
+    // Helper function to highlight a field
+    const highlightField = (fieldId) => {
+        document.getElementById(fieldId).classList.add('error');
+    };
 
-            if (!hasError) {
-                //alert('Course added successfully!'); // Here you would handle adding the course
-                closeAddCourseModal();
-            }
-        }
+    // Validate required fields
+    if (!courseId) {
+        highlightField('courseId');
+        hasError = true;
+    }
+    if (!courseName) {
+        highlightField('courseName');
+        hasError = true;
+    }
+    if (!department) {
+        highlightField('department');
+        hasError = true;
+    }
+    if (!instructor) {
+        highlightField('instructor');
+        hasError = true;
+    }
+    if (undergradCapacity === '') {
+        highlightField('undergradCapacity');
+        hasError = true;
+    }
+    if (gradCapacity === '') {
+        highlightField('gradCapacity');
+        hasError = true;
+    }
+    if (phdSeats === '') {
+        highlightField('phdSeats');
+        hasError = true;
+    }
+    if (!section) {
+        highlightField('section');
+        hasError = true;
+    }
+    if (!classDay) {
+        highlightField('classDay');
+        hasError = true;
+    }
+    if (!startTime) {
+        highlightField('startTime');
+        hasError = true;
+    }
+    if (!endTime) {
+        highlightField('endTime');
+        hasError = true;
+    }
+    if (credits === '') {
+        highlightField('credits');
+        hasError = true;
+    }
+    if (waitlistCapacity === '') {
+        highlightField('waitlistCapacity');
+        hasError = true;
+    }
+
+    // Ensure startTime < endTime
+    if (startTime && endTime && startTime >= endTime) {
+        alert("Start Time must be earlier than End Time.");
+        highlightField('startTime');
+        highlightField('endTime');
+        hasError = true;
+    }
+
+    if (!hasError) {
+        // All fields are valid, you can submit the form or perform further actions here
+        alert('Course added successfully!'); // Remove this or replace with your logic
+        document.getElementById('addCourseForm').submit(); // Submit the form
+    }
+}
 
         // Function to highlight fields
         function highlightField(fieldId) {
@@ -428,12 +573,78 @@
             // Implement the update course functionality here
             alert(`Update course with ID: ${courseId}`);
         }
+        async function openEditCourseForm(courseId) {
+    // Fetch course details using the API
+    const course = await getCourseDetails(courseId);
 
-        function deleteCourse(courseId) {
-            // Implement the delete course functionality here
-            alert(`Delete course with ID: ${courseId}`);
+    if (!course) {
+        alert('Failed to fetch course details.');
+        return;
+    }
+
+    // Populate the form fields with the course details
+    document.getElementById('editCourseId').value = course.course_id || '';
+    document.getElementById('editCourseName').value = course.name || '';
+    document.getElementById('editDepartment').value = course.department_id || '';
+    document.getElementById('editInstructor').value = course.instructor || ''; // Handle undefined instructor
+    document.getElementById('editUndergradCapacity').value = course.undergrad_capacity || 0;
+    document.getElementById('editGradCapacity').value = course.grad_capacity || 0;
+    document.getElementById('editPhdSeats').value = course.phd_course_capacity || 0;
+    document.getElementById('editSection').value = course.section || '';
+    document.getElementById('editClassDay').value = course.class_days || '';
+    document.getElementById('editStartTime').value = course.start_time || '';
+    document.getElementById('editEndTime').value = course.end_time || '';
+    document.getElementById('editCourseDescription').value = course.description || '';
+    document.getElementById('editToWaitlist').checked = course.to_waitlist || false;
+    document.getElementById('editPointsAssigned').value = course.points_assigned || 0;
+    document.getElementById('editCredits').value = course.credits || 0.0;
+    document.getElementById('editWaitlistCapacity').value = course.waitlist_capacity || 0;
+
+    // Open the Edit Course Modal
+    document.getElementById('editCourseModal').style.display = 'block';
+}
+        function closeEditCourseModal() {
+            document.getElementById('editCourseModal').style.display = 'none';
         }
-                // Close the modals when clicking outside of them
+
+        async function deleteCourse(courseId) {
+                if (!confirm(`Are you sure you want to delete the course with ID: ${courseId}?`)) {
+                    return; // Exit if the user cancels the confirmation
+                }
+
+                try {
+                    // Send a POST request to the delete_course API
+                    const response = await fetch(`/systemadmin/delete_course/${courseId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCSRFToken(), // Include CSRF token for POST request
+                        },
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Failed to delete course.');
+                    }
+
+                    // Remove the course from the UI
+                    const courseItem = document.querySelector(`[data-course-id="${courseId}"]`);
+                    if (courseItem) {
+                        courseItem.remove();
+                    }
+
+                    alert('Course deleted successfully!');
+                } catch (error) {
+                    console.error('Error deleting course:', error);
+                    alert(`Error deleting course: ${error.message}`);
+                }
+}
+
+            // Utility function to get CSRF token
+            function getCSRFToken() {
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                return csrfToken;
+            }
+                            // Close the modals when clicking outside of them
         window.onclick = function(event) {
             const modals = [document.getElementById('courseModal'), document.getElementById('addCourseModal'), document.getElementById('modifyCoursesModal')];
             modals.forEach(modal => {

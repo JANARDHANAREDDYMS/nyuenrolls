@@ -31,12 +31,29 @@ class OverrideFormSubmission(forms.ModelForm):
             instance.save()
         return instance
 
+from django import forms
+from .models import CourseInfo
+
 class CourseForm(forms.ModelForm):
     class Meta:
         model = CourseInfo
-        fields = ['name', 'Department', 'Instructor', 'grad_Capacity', 'phd_course_capacity', 'class_days', 
-                  'start_time', 'end_time', 'description', 'to_waitlist', 'points_assigned', 'credits']
+        fields = [
+            'name', 
+            'Department',  # Updated from 'Department'
+            'Instructor',  # Updated from 'Instructor'
+            'grad_Capacity',  # Updated from 'grad_Capacity'
+            'phd_course_capacity', 
+            'class_days', 
+            'start_time', 
+            'end_time', 
+            'description', 
+            'to_waitlist', 
+            'points_assigned', 
+            'credits',
+            'waitlist_capacity',  # Added to include in the form
+        ]
 
+    # Updated class_days to align with the new model
     class_days = forms.ChoiceField(
         choices=[
             ('Monday', 'Monday'),
@@ -50,9 +67,20 @@ class CourseForm(forms.ModelForm):
         widget=forms.RadioSelect, 
         required=False, 
     )
-    
-    start_time = forms.TimeField(widget=forms.TimeInput(format='%H:%M'), required=False)
-    end_time = forms.TimeField(widget=forms.TimeInput(format='%H:%M'), required=False)
+
+    # Added default time input widgets for better user experience
+    start_time = forms.TimeField(
+        widget=forms.TimeInput(format='%H:%M', attrs={'placeholder': 'HH:MM'}),
+        required=False,
+        help_text="Format: HH:MM (24-hour format)",
+    )
+
+    end_time = forms.TimeField(
+        widget=forms.TimeInput(format='%H:%M', attrs={'placeholder': 'HH:MM'}),
+        required=False,
+        help_text="Format: HH:MM (24-hour format)",
+    )
+
 
 
 
