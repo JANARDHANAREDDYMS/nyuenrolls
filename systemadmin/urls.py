@@ -1,3 +1,5 @@
+
+
 from django.urls import path
 from .views import admin_dashboard,course_add,course_update,delete_course, prereg, override, modify_override,get_course_details
 

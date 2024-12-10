@@ -4,21 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+    
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #ffffff; /* Neutral Background */
-            color: #2c2c2c; /* Dark Text */
+            background-color: #ffffff;
+            color: #2c2c2c;
         }
 
         header {
             display: auto;
             align-items: center;
             justify-content: space-between;
-            flex-direction: row; /* Align items horizontally */
-            background-color: #57068c; /* NYU Violet */
+            flex-direction: row;
+            background-color: #57068c;
             color: white;
             padding: 10px 20px;
         }
@@ -34,7 +35,7 @@
             max-width: 1200px;
             margin: 20px auto;
             padding: 20px;
-            background-color: #ffffff; /* White Background */
+            background-color: #ffffff;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
@@ -46,7 +47,7 @@
 
         .welcome-section h1 {
             color: #57068c;
-            font-size: 1.6rem; /* Adjusted for better appearance */
+            font-size: 1.6rem;
             margin: 10px 0;
         }
 
@@ -57,7 +58,7 @@
 
         h2 {
             color: #57068c;
-            font-size: 1.5rem; /* NYU Violet */
+            font-size: 1.5rem;
         }
 
         ul {
@@ -68,7 +69,7 @@
         li {
             margin: 10px 0;
             padding: 15px;
-            background-color: #f4f4f4; /* Light Gray */
+            background-color: #f4f4f4;
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
@@ -76,7 +77,7 @@
         li h3 {
             margin: 0;
             font-size: 18px;
-            color: #57068c; /* NYU Violet */
+            color: #57068c;
         }
 
         li p {
@@ -88,7 +89,7 @@
             display: inline-block;
             margin: 10px 0;
             padding: 12px 20px;
-            background-color: #57068c; /* NYU Violet */
+            background-color: #57068c;
             color: white;
             text-decoration: none;
             border: none;
@@ -99,7 +100,7 @@
         }
 
         .button:hover {
-            background-color: #4b007d; /* Deep Violet Hover */
+            background-color: #4b007d;
         }
 
         form {
@@ -120,9 +121,54 @@
             text-align: center;
             padding: 10px 0;
             margin-top: 20px;
-            background-color: #57068c; /* NYU Violet */
+            background-color: #57068c;
             color: white;
         }
+        .button-container {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    margin: 20px 0;
+}
+
+.form-group {
+    flex: 1;
+}
+
+.swap-container {
+    padding: 0;
+    margin-bottom: 10px;
+}
+
+.swap-options {
+    margin-top: 10px;
+}
+       
+
+.swap-main-button {
+    margin-bottom: 15px;
+}
+
+.swap-options {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
+}
+.swap-option label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #57068c;
+}
+
+.swap-select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
 
         @media (max-width: 768px) {
             .container {
@@ -152,6 +198,10 @@
             }
         }
     </style>
+    <!-- Add React and ReactDOM scripts -->
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
 </head>
 <body>
     <header>
@@ -161,10 +211,8 @@
     </header>
 
     <div class="container">
-        <!-- Welcome Section -->
         <div class="welcome-section">
             <h1>Welcome, {{ student_info.Name }}</h1>
-            <h3>{{ credits_left }}</h3>
         </div>
 
         {% if messages %}
@@ -176,12 +224,7 @@
         {% endif %}
 
         <h2>Your Enrolled Courses</h2>
-        <form method="post" action="{% url 'courseEnroll:search_courses' %}">
-            {% csrf_token %}
-            <input type="hidden" name="action" id="formAction" value="enroll"> <!-- Hidden input field for action -->
-            <input type="search" name="search_courses" placeholder="Enter Course ID" required>
-            <button type="submit" class="button" onclick="setAction('enroll')">Enroll into more courses</button>
-        </form>
+        <h3>Remaining Credits: {{credits_left}}</h3>
         <ul>
             {% if enrolled_courses %}
                 {% for item in enrolled_courses %}
@@ -198,25 +241,196 @@
             {% endif %}
         </ul>
 
+    <form method="post" action="{% url 'courseEnroll:search_courses' %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="formAction" value="enroll">
+        <input type="search" name="search_courses" placeholder="Enter Course ID" required>
+        <button type="submit" class="button" onclick="setAction('enroll')">Enroll into more courses</button>
+    </form>
+
+    <div style="display: flex; justify-content: space-between; align-items: start; margin-top: 20px;">
+        <form method="post" action="{% url 'courseEnroll:delete_selected_courses' %}" style="flex: 1;">
+            {% csrf_token %}
+            <div class="swap-option">
+                <label>Select Course to Delete:</label>
+                <select name="selected_courses" class="swap-select">
+                    <option value="">Select a course to delete...</option>
+                    {% for item in enrolled_courses %}
+                        <option value="{{ item.course.course_id }}">
+                            {{ item.course.name }} ({{ item.course.course_id }}) - {{ item.course.credits }} credits
+                        </option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="button delete-button">Delete Selected Course</button>
+            </div>
+        </form>
+    
+    <div id="course-swap-root" style="margin-right: 60px; margin-top: 90px; flex:2">
+        
+                <script type="text/babel">
+                const CourseSwapComponent = () => {
+                    const [showPanel, setShowPanel] = React.useState(false);
+                    const [selectedEnrolled, setSelectedEnrolled] = React.useState('');
+                    const [selectedWaitlisted, setSelectedWaitlisted] = React.useState('');
+
+                    const togglePanel = (e) => {
+                        e.preventDefault(); // Prevent any default action
+                        setShowPanel(!showPanel);
+                    };
+
+                    const handleSwap = (e) => {
+                        e.preventDefault(); // Prevent any default action
+                        if (!selectedEnrolled || !selectedWaitlisted) {
+                            alert('Please select both courses');
+                            return;
+                        }
+
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = "{% url 'courseEnroll:swap_courses' %}";
+                        
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = 'csrfmiddlewaretoken';
+                        csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                        form.appendChild(csrfInput);
+
+                        const enrolledInput = document.createElement('input');
+                        enrolledInput.type = 'hidden';
+                        enrolledInput.name = 'enrolled_course_id';
+                        enrolledInput.value = selectedEnrolled;
+                        form.appendChild(enrolledInput);
+
+                        const waitlistedInput = document.createElement('input');
+                        waitlistedInput.type = 'hidden';
+                        waitlistedInput.name = 'waitlisted_course_id';
+                        waitlistedInput.value = selectedWaitlisted;
+                        form.appendChild(waitlistedInput);
+
+                        document.body.appendChild(form);
+                        form.submit();
+                    };
+
+                    return (
+                        <React.Fragment>
+                            <div className="swap-container">
+                                <div className="swap-header">
+                                    <button 
+                                        type="button"
+                                        className="button"
+                                        onClick={togglePanel}
+                                    >
+                                        {showPanel ? 'Hide Swap Panel' : 'Show Swap Panel'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {showPanel && (
+                                <div className="swap-container">
+                                    <div className="swap-options">
+                                        <div className="swap-option">
+                                            <label>Select Enrolled Course:</label>
+                                            <select
+                                                className="swap-select"
+                                                value={selectedEnrolled}
+                                                onChange={(e) => setSelectedEnrolled(e.target.value)}
+                                            >
+                                                <option value="">Select enrolled course to swap out...</option>
+                                                {enrolledCourses.map((course) => (
+                                                    <option key={course.course.course_id} value={course.course.course_id}>
+                                                        {course.course.name} ({course.course.course_id})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="swap-option">
+                                            <label>Select Waitlisted Course:</label>
+                                            <select
+                                                className="swap-select"
+                                                value={selectedWaitlisted}
+                                                onChange={(e) => setSelectedWaitlisted(e.target.value)}
+                                            >
+                                                <option value="">Select waitlisted course to swap in...</option>
+                                                {waitlistedCourses.map((course) => (
+                                                    <option key={course.course.course_id} value={course.course.course_id}>
+                                                        {course.course.name} ({course.course.course_id})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="swap-actions">
+                                            <button 
+                                                type="button"
+                                                className="button"
+                                                onClick={handleSwap}
+                                            >
+                                                Confirm Swap
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </React.Fragment>
+                    );
+                };
+
+                const enrolledCourses = {{ enrolled_courses_json|safe }};
+                const waitlistedCourses = {{ waitlist_courses_json|safe }};
+                
+                ReactDOM.render(
+                    <CourseSwapComponent />,
+                    document.getElementById('course-swap-root')
+                );
+                document.addEventListener('DOMContentLoaded', function() {
+                const root = document.getElementById('course-swap-root');
+                if (root) {
+                    ReactDOM.render(<CourseSwap />, root);
+                }
+            });
+       
+            </script>  
+    </div>
+</div>
+
+       
+
         <h2>Waitlisted Courses</h2>
+        <h3>Remaining Points {{ points_left }}</h3>
         <form method="post" action="{% url 'courseEnroll:search_courses' %}">
             {% csrf_token %}
-            <input type="hidden" name="action" id="formAction" value="waitlist"> <!-- Hidden input field for action -->
+            <input type="hidden" name="action" id="formAction" value="waitlist">
             <input type="search" name="search_courses" placeholder="Enter Course ID" required>
             <button type="submit" class="button" onclick="setAction('waitlist')">Waitlist into more courses</button>
         </form>
+        <form method="post" action="{% url 'courseEnroll:delete_selected_courses' %}">
+            {% csrf_token %}
+            <div class="swap-option" style="margin: 20px 0;">
+                <label>Select Course to Delete:</label>
+                <select name="selected_courses" class="swap-select">
+                    <option value="">Select a course to delete...</option>
+                    {% for item in waitlist_courses %}
+                        <option value="{{ item.course.course_id }}">
+                            {{ item.course.name }} ({{ item.course.course_id }}) - {{ item.course.credits }} credits
+                        </option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="button delete-button">Delete Selected Course</button>
+            </div>
+        </form>
+
         <ul>
             {% if waitlist_courses %}
                 {% for item in waitlist_courses %}
                     <li>
-                        <h3>
-                            <a href="{% url 'courseEnroll:course_enrollment' item.course.course_id %}">{{ item.course.name }} ({{ item.course.course_id }})</a>
-                        </h3>
+                        <input type="checkbox" name="selected_courses" value="{{ item.course.course_id }}">
+                        <h3>{{ item.course.name }} ({{ item.course.course_id }})</h3>
                         <p><strong>Instructor:</strong> {{ item.course.Instructor.name }}</p>
                         <p><strong>Description:</strong> {{ item.course.description }}</p>
                         <p><strong>Credits:</strong> {{ item.course.credits }}</p>
+                        <p><strong>Points Assigned:</strong> {{ item.points_assigned }}</p>
                         <p><strong>Class Time:</strong> {{ item.course.start_time }} - {{ item.course.end_time }}</p>
-                        <p><strong>Created Time:</strong> {{ item.created_at }}</p>
                     </li>
                 {% endfor %}
             {% else %}
@@ -224,6 +438,7 @@
             {% endif %}
         </ul>
     </div>
+
     <div class="container">
         <button class="button" onclick="toggleForm('override-form')">Fill Override Form</button>
         <div class="form-section" id="override-form" style="display: none;">
@@ -257,6 +472,7 @@
             {% endif %}
         </div>    
     </div>
+
     <div class="container">
         <h3>Pre-Registration Form</h3>
         {% if prereg_form_exists %}
@@ -276,19 +492,22 @@
             {% endif %}
         {% endif %}
     </div>
+
     <footer>
         <p>&copy; 2024 NYU ENROLLS</p>
     </footer>
+ 
+</div>
+
+
     <script>
         function toggleForm(id) {
             var form = document.getElementById(id);
             form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
         }
-    </script>
-    <script>
+
         function setAction(action) {
             document.getElementById('formAction').value = action;
         }
     </script>
 </body>
-</html>
