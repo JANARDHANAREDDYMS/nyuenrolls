@@ -300,7 +300,7 @@ def select_courses(request):
                             if points_assigned < 0:
                                 messages.error(request, f"Points cannot be negative for {course.name}")
                                 continue
-                            if points_assigned > student_info.points:
+                            if points_assigned > int(100 -student_info.points):
                                 messages.error(request, f"Not enough points available for {course.name}")
                                 continue
 

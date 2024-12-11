@@ -253,7 +253,7 @@
             {% csrf_token %}
             <div class="swap-option">
                 <label>Select Course to Delete:</label>
-                <select name="selected_courses" class="swap-select">
+                <select name="selected_courses" class="swap-select" multiple>
                     <option value="">Select a course to delete...</option>
                     {% for item in enrolled_courses %}
                         <option value="{{ item.course.course_id }}">
@@ -404,21 +404,6 @@
             <input type="search" name="search_courses" placeholder="Enter Course ID" required>
             <button type="submit" class="button" onclick="setAction('waitlist')">Waitlist into more courses</button>
         </form>
-        <form method="post" action="{% url 'courseEnroll:delete_selected_courses' %}">
-            {% csrf_token %}
-            <div class="swap-option" style="margin: 20px 0;">
-                <label>Select Course to Delete:</label>
-                <select name="selected_courses" class="swap-select">
-                    <option value="">Select a course to delete...</option>
-                    {% for item in waitlist_courses %}
-                        <option value="{{ item.course.course_id }}">
-                            {{ item.course.name }} ({{ item.course.course_id }}) - {{ item.course.credits }} credits
-                        </option>
-                    {% endfor %}
-                </select>
-                <button type="submit" class="button delete-button">Delete Selected Course</button>
-            </div>
-        </form>
 
         <ul>
             {% if waitlist_courses %}
@@ -437,6 +422,21 @@
                 <li>You are not waitlisted in any courses.</li>
             {% endif %}
         </ul>
+        <form method="post" action="{% url 'courseEnroll:delete_selected_courses' %}">
+            {% csrf_token %}
+            <div class="swap-option" style="margin: 20px 0;">
+                <label>Select Course to Delete:</label>
+                <select name="selected_courses" class="swap-select" multiple>
+                    <option value="">Select a course to delete...</option>
+                    {% for item in waitlist_courses %}
+                        <option value="{{ item.course.course_id }}">
+                            {{ item.course.name }} ({{ item.course.course_id }}) - {{ item.course.credits }} credits
+                        </option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="button delete-button">Delete Selected Course</button>
+            </div>
+        </form>
     </div>
 
     <div class="container">
