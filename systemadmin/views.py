@@ -8,6 +8,19 @@ from datetime import date,datetime
 from django.contrib import messages
 from courseEnroll.forms import OverrideFormSubmission
 from django.db.models import Q
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+email_address = os.getenv('EMAIL')
+email_password = os.getenv('PASSWORD')
+
+smtp_server = "asmtp.bilkent.edu.tr"
+smtp_port = 587  # STARTTLS Port
 
 
 def admin_required(user):
@@ -59,7 +72,37 @@ def modify_override(request):
 
         # Fetch the specific override form based on formId
         override_form = get_object_or_404(OverrideForm, form_id=formId)
-        
+
+        recipient_email = "am14533@nyu.edu"  # Replace with the recipient's email
+        subject = "Override Form Status Update"
+        body = f"""
+                <html>
+                    <body>
+                        <p>Your override request for <strong>{override_form.course_code}</strong> has been <strong>{status.lower()}</strong>.</p>
+                        <p>To see your current courses, click <a href='http://127.0.0.1:8000/userprofile/login/'>here</a>.</p>
+                    </body>
+                </html>
+                """
+
+        message = MIMEMultipart()
+        message["From"] = "NYU Enrolls <alper.mumcular@ug.bilkent.edu.tr>"  # Custom "From" name
+        message["To"] = recipient_email
+        message["Subject"] = subject
+        message.attach(MIMEText(body, "html"))  # Use "html" instead of "plain"
+
+        try:
+            # Connect to the SMTP server
+            with smtplib.SMTP(smtp_server, smtp_port) as server:
+                # Start TLS for security
+                server.starttls()
+                # Login to the email account
+                server.login(email_address, email_password)
+                # Send the email
+                server.sendmail(email_address, recipient_email, message.as_string())
+                print("Email sent successfully!")
+        except Exception as e:
+            print(f"Failed to send email: {e}")
+             
         # Update the status of the form
         override_form.status = status
         override_form.save()
