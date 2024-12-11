@@ -8,6 +8,8 @@ from datetime import date,datetime
 from django.contrib import messages
 from courseEnroll.forms import OverrideFormSubmission
 from django.db.models import Q
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 def admin_required(user):
@@ -66,6 +68,32 @@ def modify_override(request):
 
     return redirect('systemadmin:override')
 
+def send_override_status_email(student_email, student_name, course_name, status):
+    subject = f"Your Override Request for {course_name} - {status}"
+    
+    if status == 'Approved':
+        message = (
+            f"Dear {student_name},\n\n"
+            f"Your override request for '{course_name}' has been approved. "
+            f"You may now proceed to register for the course.\n\n"
+            "If you have any questions, please contact the administration."
+        )
+    else:
+        # For 'Rejected' or other non-approved statuses
+        message = (
+            f"Dear {student_name},\n\n"
+            f"Your override request for '{course_name}' has been reviewed and unfortunately, "
+            f"it has been rejected.\n\n"
+            "If you have any questions or believe this decision was made in error, please contact the administration."
+        )
+
+    send_mail(
+        subject,
+        message,
+        settings.DEFAULT_FROM_EMAIL,  # Make sure this is set in settings.py
+        [student_email],
+        fail_silently=False,
+    )
 
 def logout_request(request):
     logout(request)
