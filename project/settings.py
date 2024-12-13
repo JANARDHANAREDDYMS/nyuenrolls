@@ -119,7 +119,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
 ]
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1','74.101.114.159']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '74.101.114.159', 'nyuenrolls.us-east-2.elasticbeanstalk.com']
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
