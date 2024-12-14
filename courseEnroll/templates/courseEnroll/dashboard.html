@@ -233,6 +233,7 @@
                         <p><strong>Instructor:</strong> {{ item.course.Instructor.Name }}</p>
                         <p><strong>Description:</strong> {{ item.course.description }}</p>
                         <p><strong>Credits:</strong> {{ item.course.credits }}</p>
+                        <p><strong>Day:</strong> {{ item.course.class_days }}</p>
                         <p><strong>Class Time:</strong> {{ item.course.start_time }} - {{ item.course.end_time }}</p>
                     </li>
                 {% endfor %}
@@ -407,20 +408,21 @@
 
         <ul>
             {% if waitlist_courses %}
-                {% for item in waitlist_courses %}
-                    <li>
-                        <input type="checkbox" name="selected_courses" value="{{ item.course.course_id }}">
-                        <h3>{{ item.course.name }} ({{ item.course.course_id }})</h3>
-                        <p><strong>Instructor:</strong> {{ item.course.Instructor.name }}</p>
-                        <p><strong>Description:</strong> {{ item.course.description }}</p>
-                        <p><strong>Credits:</strong> {{ item.course.credits }}</p>
-                        <p><strong>Points Assigned:</strong> {{ item.points_assigned }}</p>
-                        <p><strong>Class Time:</strong> {{ item.course.start_time }} - {{ item.course.end_time }}</p>
-                    </li>
-                {% endfor %}
-            {% else %}
-                <li>You are not waitlisted in any courses.</li>
-            {% endif %}
+    {% for item in waitlist_courses %}
+        <li>
+            <h3>{{ item.course.name }} ({{ item.course.course_id }})</h3>
+            <p><strong>Instructor:</strong> {{ item.course.Instructor.name }}</p>
+            <p><strong>Description:</strong> {{ item.course.description }}</p>
+            <p><strong>Credits:</strong> {{ item.course.credits }}</p>
+            <p><strong>Position:</strong> {{ item.course.position }} out of {{ item.course.total_waitlist }}</p>
+            <p><strong>Points Assigned:</strong> {{ item.points_assigned }}</p>
+            <p><strong>True Points:</strong> {{ item.true_points }}</p>
+            <p><strong>Class Time:</strong> {{ item.course.start_time }} - {{ item.course.end_time }}</p>
+        </li>
+    {% endfor %}
+{% else %}
+    <li>You are not waitlisted in any courses.</li>
+{% endif %}
         </ul>
         <form method="post" action="{% url 'courseEnroll:delete_selected_courses' %}">
             {% csrf_token %}

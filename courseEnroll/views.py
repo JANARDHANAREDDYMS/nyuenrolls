@@ -8,8 +8,11 @@ from .models import CourseInfo, Enrollment
 from .forms import OverrideFormSubmission, PreRegInfoForm
 from courseEnroll.models import OverrideForm, PreRegInfo
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 import json  # Add this import
 from django.core.serializers.json import DjangoJSONEncoder  # Add this too if not already present
+from datetime import datetime
+
 
 @login_required
 def dashboard(request):
@@ -50,6 +53,7 @@ def dashboard(request):
                     'name': str(enrollment.course.name),
                     'credits': float(enrollment.course.credits),
                     'description': str(enrollment.course.description),
+                    'class_days':str(enrollment.course.class_days),
                     'Instructor': {
                         'Name': str(enrollment.course.Instructor.Name)
                     },
@@ -60,25 +64,43 @@ def dashboard(request):
             }
             for enrollment in all_enrollments if not enrollment.is_waitlisted
         ]
-        
-        waitlist_courses = [
-            {
-                'course': {
-                    'course_id': str(enrollment.course.course_id),
-                    'name': str(enrollment.course.name),
-                    'credits': float(enrollment.course.credits),
-                    'description': str(enrollment.course.description),
-                    'Instructor': {
-                        'name': str(enrollment.course.Instructor.Name)
+
+        waitlist_courses = []
+        for enrollment in all_enrollments:
+            if enrollment.is_waitlisted:
+                course_waitlist = list(Enrollment.objects.filter(
+                    course=enrollment.course, 
+                    is_waitlisted=True
+                ).order_by('-true_points'))
+                
+                try:
+                    position = next(
+                        (index + 1 for index, e in enumerate(course_waitlist) 
+                         if e.id == enrollment.id), 
+                        None
+                    )
+                except Exception as e:
+                    print(f"Error finding position: {e}")
+                    position = None
+
+                waitlist_courses.append({
+                    'course': {
+                        'course_id': str(enrollment.course.course_id),
+                        'name': str(enrollment.course.name),
+                        'credits': float(enrollment.course.credits),
+                        'description': str(enrollment.course.description),
+                        'Instructor': {
+                            'name': str(enrollment.course.Instructor.Name)
+                        },
+                        'start_time': str(enrollment.course.start_time),
+                        'end_time': str(enrollment.course.end_time),
+                        'position': position,
+                        'total_waitlist': len(course_waitlist)
                     },
-                    'start_time': str(enrollment.course.start_time),
-                    'end_time': str(enrollment.course.end_time)
-                },
-                'points_assigned': float(enrollment.points_assigned if enrollment.points_assigned is not None else 0),
-                'created_at': str(enrollment.created_at)
-            }
-            for enrollment in all_enrollments if enrollment.is_waitlisted
-        ]
+                    'points_assigned': float(enrollment.points_assigned if enrollment.points_assigned is not None else 0),
+                    'true_points': float(enrollment.true_points if enrollment.true_points is not None else 0),
+                    'created_at': str(enrollment.created_at)
+                })
 
         # Convert to JSON after explicit float conversion
         enrolled_courses_json = json.dumps(enrolled_courses)
@@ -101,7 +123,11 @@ def dashboard(request):
 
         return render(request, 'courseEnroll/dashboard.html', context)
     except Exception as e:
-            print(f"Error in dashboard: {str(e)}")
+        print(f"Error in dashboard: {str(e)}")
+        # Return a response even if there's an error
+        return render(request, 'courseEnroll/dashboard.html', {
+            'error': f"An error occurred: {str(e)}"
+        })
 
 @login_required
 def swap_courses(request):
@@ -196,6 +222,8 @@ def search_courses(request):
 
 @login_required
 def select_courses(request):
+    target_date = timezone.make_aware(datetime(2024, 12, 12, 0, 0, 0))
+
     if request.method == 'POST':
         student_info = StudentInfo.objects.get(user=request.user)
         student_school = student_info.School
@@ -292,27 +320,47 @@ def select_courses(request):
                     messages.success(request, f"Successfully enrolled in {course.name}.")
 
                 elif action == 'waitlist':
-                    # Add to waitlist
                     if not waitlisted_enrollment:
                         points_assigned = request.POST.get(f'points_{course_id}', 0)
                         try:
+                            print(f"Current student points: {student_info.points}")
+                            print(f"Points attempting to assign: {points_assigned}")
+                            print(f"Calculation check: 100 - {student_info.points} = {100 -int(points_assigned)}")
+
                             points_assigned = int(points_assigned)
+                            
                             if points_assigned < 0:
                                 messages.error(request, f"Points cannot be negative for {course.name}")
                                 continue
-                            if points_assigned > int(100 -student_info.points):
-                                messages.error(request, f"Not enough points available for {course.name}")
+                            
+                            if points_assigned > student_points:
+                                messages.error(request,
+                                    f"Not enough points available for {course.name}. "
+                                    f"Current points: {student_points}, "
+                                    f"Attempted to assign: {points_assigned}"
+                                )
                                 continue
 
-                            Enrollment.objects.create(
+                            new_enrollment = Enrollment.objects.create(
                                 student=student_info, 
                                 course=course, 
                                 is_waitlisted=True,
                                 points_assigned=points_assigned
                             )
+
+                            days_difference = max(0, (new_enrollment.created_at - target_date).days)
+                            true_points = max(0, points_assigned - (days_difference * 1.6))
+                            
+                            new_enrollment.true_points = true_points
+                            new_enrollment.save()
+
                             student_info.points -= points_assigned
                             student_info.save()
-                            messages.success(request, f"Successfully waitlisted for {course.name} with {points_assigned} points.")
+
+                            messages.success(request, 
+                                f"Successfully waitlisted for {course.name} with {points_assigned} points. "
+                                f"True points for position: {true_points}"
+                            )
                         except ValueError:
                             messages.error(request, f"Invalid points value for {course.name}.")
                             continue
@@ -447,3 +495,6 @@ def verify_course_enrollment_consistency():
 
 def submit_override_form(request):
     pass
+
+from .models import CourseInfo, Enrollment
+

@@ -89,6 +89,7 @@ class Enrollment(models.Model):
     student = models.ForeignKey('userprofile.StudentInfo', on_delete=models.CASCADE, related_name='enrollments')  # Use app label 'userprofile'
     course = models.ForeignKey(CourseInfo, on_delete=models.CASCADE, related_name='enrollments')
     points_assigned = models.DecimalField(decimal_places=1, max_digits=3, null=True, blank=True)
+    true_points = models.DecimalField(decimal_places=1,max_digits=3,null=True,blank=True)
     is_waitlisted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
