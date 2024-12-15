@@ -261,22 +261,35 @@ function removeCourseFromSchedule(course, sectionIndex) {
     const endHour = course.end[sectionIndex];
     const startMin = course.start_mins[sectionIndex] === "30" ? 1 : 0; // "30" -> 1 for half hour
     const endMin = course.end_mins[sectionIndex] === "30" ? 1 : 0; // "30" -> 1 for half hour
-    
+
     const startRow = (startHour - 8) * 2 + startMin; // Adjust for the 8 AM starting row
     const endRow = (endHour - 8) * 2 + endMin; // Adjust for the 8 AM starting row
-    
+
     for (let i = startRow; i < endRow; i++) {
         const cell = rows[i].querySelector(`td:nth-child(${getDayIndex(course.day[sectionIndex])})`);
         
-        // Remove only the specific course block, if needed
-        const courseBlocks = cell.querySelectorAll(".course-block");
+        // Remove the specific course block with course-block or time-conflict
+        const courseBlocks = cell.querySelectorAll(".course-block, .time-conflict");
         courseBlocks.forEach((block) => {
+            //console.log(block.textContent)
+            //console.log(course.name)
             if (block.textContent === course.name) {
                 cell.removeChild(block);
             }
         });
+
+        // Check if any remaining blocks are present
+        const remainingBlocks = cell.querySelectorAll("div");
+
+        if (remainingBlocks.length > 0) {
+            // If other blocks exist, ensure they're marked as normal course blocks
+            remainingBlocks.forEach(block => {
+                block.className = 'course-block';
+            });
+        }
     }
 }
+
 
 
 
