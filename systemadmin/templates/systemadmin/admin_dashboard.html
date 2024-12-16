@@ -200,6 +200,62 @@
         .delete-button:hover {
             background-color: darkred;
         }
+        form label {
+            display: block; /* Her etiket yeni bir satırda görünür */
+            font-weight: bold; /* Yazıları vurgulu yapar (isteğe bağlı) */
+            margin-top: 10px; /* Üstten biraz boşluk ekler */
+        }
+
+        form input[type="time"],
+        form input[type="checkbox"],
+        form textarea,
+        form select {
+            display: block; /* Elemanları hizalar */
+            width: 100%; /* Genişliği diğer alanlarla uyumlu yapar */
+            padding: 10px; /* Tutarlı padding sağlar */
+            margin: 10px 0; /* Alt ve üst boşluklar */
+            border: 1px solid #ccc; /* Tutarlı çerçeve */
+            border-radius: 5px; /* Yuvarlatılmış köşeler */
+        }
+
+        form label[for="toWaitlist"] {
+            margin-bottom: 5px; /* Etiketin checkbox ile uyumlu görünmesi için */
+            display: inline-block; /* Yan yana yerleştirir */
+        }
+        #addCourseForm {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .form-group {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        width: 25%; /* Adjust to desired label width */
+        text-align: left;
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    .form-group input, 
+    .form-group select, 
+    .form-group textarea {
+        width: 100%; /* Adjust to desired input width */
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+
+    .form-group textarea {
+        resize: none;
+    }
     </style>
     
 </head>
@@ -241,75 +297,98 @@
             <h2>Add Course</h2>
             <form id="addCourseForm" method="POST" action="{% url 'systemadmin:course_add' %}">
                 {% csrf_token %}
-            
-                <!-- Course ID -->
-                <input type="text" id="courseId" name="courseId" placeholder="Course ID" required>
-            
-                <!-- Course Name -->
-                <input type="text" id="courseName" name="courseName" placeholder="Course Name" required>
-            
-                <!-- Select Department -->
-                <select id="department" name="department" required>
-                    <option value="">Select Department</option>
-                    {% for dept in departments %}
-                        <option value="{{ dept.department_id }}">{{ dept.name }}</option>
-                    {% endfor %}
-                </select>
-            
-                <!-- Select Instructor -->
-                <input type="text" id="instructor" name="instructor" placeholder="Instructor Name" required>
-            
-                <!-- Undergraduate Capacity -->
-                <input type="number" id="undergradCapacity" name="undergradCapacity" placeholder="Undergrad Capacity" required min="0" oninput="validity.valid||(value='');">
-            
-                <!-- Graduate Capacity -->
-                <input type="number" id="gradCapacity" name="gradCapacity" placeholder="Graduate Capacity" required min="0" oninput="validity.valid||(value='');">
-            
-                <!-- PhD Student Seats -->
-                <input type="number" id="phdSeats" name="phdSeats" placeholder="PhD Student Seats" required min="0" oninput="validity.valid||(value='');">
-            
-                <!-- Section -->
-                <input type="text" id="section" name="section" placeholder="Section" maxlength="1" required>
-            
-                <!-- Class Day Dropdown -->
-                <select id="classDay" name="classDay" required>
-                    <option value="">Select Class Day</option>
-                    <option value="Monday">Monday</option>
-                    <option value="Tuesday">Tuesday</option>
-                    <option value="Wednesday">Wednesday</option>
-                    <option value="Thursday">Thursday</option>
-                    <option value="Friday">Friday</option>
-                    <option value="Saturday">Saturday</option>
-                    <option value="Sunday">Sunday</option>
-                </select>
-            
-                <!-- Start Time -->
-                <label for="startTime">Start Time:</label>
-                <input type="time" id="startTime" name="startTime" required>
-            
-                <!-- End Time -->
-                <label for="endTime">End Time:</label>
-                <input type="time" id="endTime" name="endTime" required>
-            
-                <!-- Course Description -->
-                <textarea id="courseDescription" name="courseDescription" placeholder="Course Description" rows="4" maxlength="1000"></textarea>
-            
-                <!-- To Waitlist -->
-                <label for="toWaitlist">Enable Waitlist:</label>
-                <input type="checkbox" id="toWaitlist" name="toWaitlist">
-            
-                <!-- Points Assigned -->
-                <input type="number" id="pointsAssigned" name="pointsAssigned" placeholder="Points Assigned" min="0" oninput="validity.valid||(value='');">
-            
-                <!-- Credits -->
-                <input type="number" id="credits" name="credits" placeholder="Credits" required min="0" step="0.1" oninput="validity.valid||(value='');">
-            
-                <!-- Waitlist Capacity -->
-                <input type="number" id="waitlistCapacity" name="waitlistCapacity" placeholder="Waitlist Capacity" required min="0" oninput="validity.valid||(value='');">
-            
+    
+                <div class="form-group">
+                    <label for="courseId">Course ID:</label>
+                    <input type="text" id="courseId" name="courseId" placeholder="Course ID" required>
+                </div>
+    
+                <div class="form-group">
+                    <label for="courseName">Course Name:</label>
+                    <input type="text" id="courseName" name="courseName" placeholder="Course Name" required>
+                </div>
+    
+                <div class="form-group">
+                    <label for="department">Department:</label>
+                    <select id="department" name="department" required>
+                        <option value="">Select Department</option>
+                        {% for dept in departments %}
+                            <option value="{{ dept.department_id }}">{{ dept.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+    
+                <div class="form-group">
+                    <label for="instructor">Instructor:</label>
+                    <input type="text" id="instructor" name="instructor" placeholder="Instructor Name" required>
+                </div>
+    
+                <div class="form-group">
+                    <label for="undergradCapacity">Undergrad Capacity:</label>
+                    <input type="number" id="undergradCapacity" name="undergradCapacity" placeholder="Undergrad Capacity" required min="0" oninput="validity.valid||(value='');">
+                </div>
+    
+                <div class="form-group">
+                    <label for="gradCapacity">Graduate Capacity:</label>
+                    <input type="number" id="gradCapacity" name="gradCapacity" placeholder="Graduate Capacity" required min="0" oninput="validity.valid||(value='');">
+                </div>
+    
+                <div class="form-group">
+                    <label for="phdSeats">PhD Seats:</label>
+                    <input type="number" id="phdSeats" name="phdSeats" placeholder="PhD Student Seats" required min="0" oninput="validity.valid||(value='');">
+                </div>
+    
+                <div class="form-group">
+                    <label for="section">Section:</label>
+                    <input type="text" id="section" name="section" placeholder="Section" maxlength="1" required>
+                </div>
+    
+                <div class="form-group">
+                    <label for="classDay">Class Day:</label>
+                    <select id="classDay" name="classDay" required>
+                        <option value="">Select Class Day</option>
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+                        <option value="Saturday">Saturday</option>
+                        <option value="Sunday">Sunday</option>
+                    </select>
+                </div>
+    
+                <div class="form-group">
+                    <label for="startTime">Start Time:</label>
+                    <input type="time" id="startTime" name="startTime" required>
+                </div>
+    
+                <div class="form-group">
+                    <label for="endTime">End Time:</label>
+                    <input type="time" id="endTime" name="endTime" required>
+                </div>
+    
+                <div class="form-group">
+                    <label for="courseDescription">Description:</label>
+                    <textarea id="courseDescription" name="courseDescription" placeholder="Course Description" rows="4" maxlength="1000"></textarea>
+                </div>
+    
+                <div class="form-group">
+                    <label for="toWaitlist">Enable Waitlist:</label>
+                    <input type="checkbox" id="toWaitlist" name="toWaitlist">
+                </div>
+    
+                <div class="form-group">
+                    <label for="credits">Credits:</label>
+                    <input type="number" id="credits" name="credits" placeholder="Credits" required min="0" step="0.1" oninput="validity.valid||(value='');">
+                </div>
+    
+                <div class="form-group">
+                    <label for="waitlistCapacity">Waitlist Capacity:</label>
+                    <input type="number" id="waitlistCapacity" name="waitlistCapacity" placeholder="Waitlist Capacity" required min="0" oninput="validity.valid||(value='');">
+                </div>
+    
                 <button class="add-button" type="submit">Add Course</button>
             </form>
-            
         </div>
     </div>
 
@@ -338,36 +417,78 @@
             <form id="editCourseForm" method="POST" action="{% url 'systemadmin:course_update' %}">
                 {% csrf_token %}
                 <input type="hidden" id="editCourseId" name="courseId">
-                <input type="text" id="editCourseName" name="courseName" placeholder="Course Name" required>
-                <select id="editDepartment" name="department" required>
-                    <option value="">Select Department</option>
-                    {% for dept in departments %}
-                        <option value="{{ dept.department_id }}">{{ dept.name }}</option>
-                    {% endfor %}
-                </select>
-                <input type="text" id="editInstructor" name="instructor" placeholder="Instructor Name" required>
-                <input type="number" id="editUndergradCapacity" name="undergradCapacity" placeholder="Undergrad Capacity" required min="0">
-                <input type="number" id="editGradCapacity" name="gradCapacity" placeholder="Graduate Capacity" required min="0">
-                <input type="number" id="editPhdSeats" name="phdSeats" placeholder="PhD Student Seats" required min="0">
-                <input type="text" id="editSection" name="section" placeholder="Section" maxlength="1" required>
-                <select id="editClassDay" name="classDay" required>
-                    <option value="">Select Class Day</option>
-                    <option value="Monday">Monday</option>
-                    <option value="Tuesday">Tuesday</option>
-                    <option value="Wednesday">Wednesday</option>
-                    <option value="Thursday">Thursday</option>
-                    <option value="Friday">Friday</option>
-                    <option value="Saturday">Saturday</option>
-                    <option value="Sunday">Sunday</option>
-                </select>
-                <input type="time" id="editStartTime" name="startTime" required>
-                <input type="time" id="editEndTime" name="endTime" required>
-                <textarea id="editCourseDescription" name="courseDescription" placeholder="Course Description" rows="4" maxlength="1000"></textarea>
-                <label for="editToWaitlist">Enable Waitlist:</label>
-                <input type="checkbox" id="editToWaitlist" name="toWaitlist">
-                <input type="number" id="editPointsAssigned" name="pointsAssigned" placeholder="Points Assigned" min="0">
-                <input type="number" id="editCredits" name="credits" placeholder="Credits" required min="0" step="0.1">
-                <input type="number" id="editWaitlistCapacity" name="waitlistCapacity" placeholder="Waitlist Capacity" required min="0">
+                <div class="form-group">
+                    <label for="courseName">Course Name:</label>
+                    <input type="text" id="editCourseName" name="courseName" placeholder="Course Name" required>
+                </div>
+                <div class="form-group">
+                    <label for="department">Department:</label>
+                    <select id="editDepartment" name="department" required>
+                        <option value="">Select Department</option>
+                        {% for dept in departments %}
+                            <option value="{{ dept.department_id }}">{{ dept.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="instructor">Instructor:</label>
+                    <input type="text" id="editInstructor" name="instructor" placeholder="Instructor Name" required>
+                </div>
+                <div class="form-group">
+                    <label for="undergradCapacity">Undergrad Capacity:</label>
+                    <input type="number" id="editUndergradCapacity" name="undergradCapacity" placeholder="Undergrad Capacity" required min="0">
+                </div>   
+                <div class="form-group">
+                    <label for="gradCapacity">Graduate Capacity:</label>
+                    <input type="number" id="editGradCapacity" name="gradCapacity" placeholder="Graduate Capacity" required min="0">
+                </div>  
+                <div class="form-group">
+                    <label for="phdSeats">PhD Seats:</label>
+                    <input type="number" id="editPhdSeats" name="phdSeats" placeholder="PhD Student Seats" required min="0">
+                </div>
+                <div class="form-group">
+                    <label for="section">Section:</label>
+                    <input type="text" id="editSection" name="section" placeholder="Section" maxlength="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="classDay">Class Day:</label>
+                    <select id="editClassDay" name="classDay" required>
+                        <option value="">Select Class Day</option>
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+                        <option value="Saturday">Saturday</option>
+                        <option value="Sunday">Sunday</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="startTime">Start Time:</label>
+                    <input type="time" id="editStartTime" name="startTime" required>
+                </div>
+                <div class="form-group">
+                    <label for="endTime">End Time:</label>
+                    <input type="time" id="editEndTime" name="endTime" required>
+                </div>
+                <div class="form-group">
+                    <label for="courseDescription">Description:</label>
+                    <textarea id="editCourseDescription" name="courseDescription" placeholder="Course Description" rows="4" maxlength="1000"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editToWaitlist">Enable Waitlist:</label>
+                    <input type="checkbox" id="editToWaitlist" name="toWaitlist">
+                </div>
+                
+                <input type="hidden" id="editPointsAssigned" name="pointsAssigned" placeholder="Points Assigned" min="0">
+                <div class="form-group">
+                    <label for="credits">Credits:</label>
+                    <input type="number" id="editCredits" name="credits" placeholder="Credits" required min="0" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label for="waitlistCapacity">Waitlist Capacity:</label>
+                    <input type="number" id="editWaitlistCapacity" name="waitlistCapacity" placeholder="Waitlist Capacity" required min="0">
+                </div>
                 <button class="add-button" type="submit">Save Changes</button>
             </form>
         </div>
@@ -586,7 +707,7 @@
     document.getElementById('editCourseId').value = course.course_id || '';
     document.getElementById('editCourseName').value = course.name || '';
     document.getElementById('editDepartment').value = course.department_id || '';
-    document.getElementById('editInstructor').value = course.instructor || ''; // Handle undefined instructor
+    document.getElementById('editInstructor').value = course.Instructor || ''; // Handle undefined instructor
     document.getElementById('editUndergradCapacity').value = course.undergrad_capacity || 0;
     document.getElementById('editGradCapacity').value = course.grad_capacity || 0;
     document.getElementById('editPhdSeats').value = course.phd_course_capacity || 0;
