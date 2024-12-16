@@ -3,7 +3,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from userprofile.models import DepartmentInfo,FacultyInfo,StudentInfo
 from django.http import HttpResponse,JsonResponse
-from courseEnroll.models import CourseInfo, OverrideForm,PreRegInfo
+from courseEnroll.models import CourseInfo, OverrideForm,PreRegInfo, Enrollment
 from datetime import date,datetime
 from django.contrib import messages
 from courseEnroll.forms import OverrideFormSubmission
@@ -101,12 +101,49 @@ def modify_override(request):
                 server.sendmail(email_address, recipient_email, message.as_string())
                 print("Email sent successfully!")
         except Exception as e:
-            print(f"Failed to send email: {e}")
-             
+            print(f"Failed to send email: {e}")
+        
         # Update the status of the form
         override_form.status = status
         override_form.save()
 
+        # If the status is 'Approved', add the student to the course if not already enrolled
+        if status.lower() == 'approved':
+            student = override_form.student
+            course = override_form.course_code
+
+            # Check if the student is already enrolled
+            if not Enrollment.objects.filter(student=student, course=course).exists():
+                # Enroll the student in the course
+                Enrollment.objects.create(student=student, course=course, is_waitlisted=False)
+                student.course_enrolled.add(course)
+
+                # Optionally, notify the student that they have been enrolled
+                notification_subject = "Course Enrollment Successful"
+                notification_body = f"""
+                        <html>
+                            <body>
+                                <p>Congratulations! You have been successfully enrolled in <strong>{course.name}</strong>.</p>
+                                <p>To see your current courses, click <a href='http://127.0.0.1:8000/userprofile/login/'>here</a>.</p>
+                            </body>
+                        </html>
+                        """
+                notification_message = MIMEMultipart()
+                notification_message["From"] = "NYU Enrolls <alper.mumcular@ug.bilkent.edu.tr>"
+                notification_message["To"] = recipient_email
+                notification_message["Subject"] = notification_subject
+                notification_message.attach(MIMEText(notification_body, "html"))
+
+                try:
+                    # Connect to the SMTP server and send notification email
+                    with smtplib.SMTP(smtp_server, smtp_port) as server:
+                        server.starttls()
+                        server.login(email_address, email_password)
+                        server.sendmail(email_address, recipient_email, notification_message.as_string())
+                        print("Enrollment notification sent successfully!")
+                except Exception as e:
+                    print(f"Failed to send enrollment notification email: {e}")
+        
     return redirect('systemadmin:override')
 
 
