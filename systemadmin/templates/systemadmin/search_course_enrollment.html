@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Course Enrollment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+            height: 100vh;
+            display: block;
+            text-align: center;
+        }
+
+        h1, h3 {
+            color: #57068c;
+            text-align: center;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 900px;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            margin-top: 20px;
+        }
+
+        .course-info {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #57068c;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #57068c;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #7f1794;
+        }
+
+        .remove-btn {
+            background-color: #e74c3c;
+        }
+
+        .remove-btn:hover {
+            background-color: #c0392b;
+        }
+
+        .error {
+            color: red;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        ul li {
+            background: #f9f9f9;
+            margin: 5px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 5px;
+        }
+
+        .remove-btn {
+            background-color: #e74c3c;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .remove-btn:hover {
+            background-color: #c0392b;
+        }
+
+        /* Style for the Go Back button */
+        .go-back-btn {
+            background-color: #57068c;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 20px 0;
+        }
+
+        .go-back-btn:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Search Course Enrollment</h1>
+        <!-- Display error if any -->
+        {% if error %}
+        <p class="error">{{ error }}</p>
+        {% endif %}
+
+        <!-- Course Info -->
+        <div class="course-info">
+            <h2>Course ID: {{ course.course_id }}</h2>
+            <h2>Course Name: {{ course.name }}</h2>
+            <a href="{% url 'systemadmin:dashboard' %}" class="go-back-btn">Go Back</a>
+        </div>
+
+        <!-- Enrolled Students Section -->
+        <h3>Enrolled Students</h3>
+        <ul>
+            {% for enrollment in enrolled_students %}
+                <li>
+                    <span>{{ enrollment.student.Name }} (ID: {{ enrollment.student.N_id }})</span>
+                    <form method="POST" action="{% url 'systemadmin:remove_student_fromcourse' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="student_id" value="{{ enrollment.student.N_id }}">
+                        <input type="hidden" name="course_id" value="{{ enrollment.course.course_id }}">
+                        <button type="submit" class="remove-btn">Remove</button>
+                    </form>
+                </li>
+            {% empty %}
+                <li>No enrolled students found.</li>
+            {% endfor %}
+        </ul>
+
+        <!-- Waitlisted Students Section -->
+        <h3>Waitlisted Students</h3>
+        <ul>
+            {% for enrollment in waitlisted_students %}
+                <li>
+                    <span>{{ enrollment.student.Name }} (ID: {{ enrollment.student.N_id }})</span>
+                    <form method="POST" action="{% url 'systemadmin:remove_student_fromcourse' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="student_id" value="{{ enrollment.student.N_id }}">
+                        <input type="hidden" name="course_id" value="{{ enrollment.course.course_id }}">
+                        <button type="submit" class="remove-btn">Remove</button>
+                    </form>
+                </li>
+            {% empty %}
+                <li>No waitlisted students found.</li>
+            {% endfor %}
+        </ul>
+
+    </div>
+
+</body>
+</html>
