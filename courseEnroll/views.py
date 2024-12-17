@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.db import transaction
 from django.contrib import messages
-from userprofile.models import StudentInfo
+from userprofile.models import StudentInfo,DepartmentInfo
 from .models import CourseInfo, Enrollment
 from .forms import OverrideFormSubmission, PreRegInfoForm
 from courseEnroll.models import OverrideForm, PreRegInfo
@@ -199,26 +199,48 @@ def swap_courses(request):
     return redirect('courseEnroll:dashboard')
 
 
+
 @login_required
 def search_courses(request):
     if request.method == 'POST':
         search_courses = request.POST.get('search_courses', '')
+        school_id = request.POST.get('school', '')
+        department_id = request.POST.get('department', '')
         action = request.POST.get('action', 'enroll')
-        
+
+        courses = CourseInfo.objects.all()
+
+        # Filter by school
+        if school_id:
+            courses = courses.filter(school__id=school_id)
+
+        # Filter by department
+        if department_id:
+            courses = courses.filter(Department__id=department_id)
+
+        # Filter by search query
         courses = CourseInfo.objects.filter(
             Q(course_id__icontains=search_courses) |
             Q(name__icontains=search_courses) | 
             Q(description__icontains=search_courses) |  
             Q(Instructor__Name__icontains=search_courses)
         )
+
+        departments = DepartmentInfo.objects.all()
+
         return render(request, 'courseEnroll/course_search.html', {
             'search_courses': search_courses,
             'courses': courses,
-            'action': action
+            'action': action,
+            'schools': CourseInfo.SCHOOLS,
+            'departments': departments,
+            'selected_school': school_id,
+            'selected_department': department_id,
+            'student_info': request.user.studentinfo,
         })
     else:
         return render(request, 'courseEnroll/course_search.html', {})
-
+    
 
 @login_required
 def select_courses(request):
@@ -254,6 +276,10 @@ def select_courses(request):
                 if course.school != student_school:
                     messages.error(request, f"{course.name} is not offered by your school ({student_school}). Please contact your advisor.")
                     continue
+
+                if Enrollment.objects.filter(student=student_info, course__name=course.name, is_waitlisted=False).exists():
+                    messages.error(request, f"You are already enrolled in a course named '{course.name}'. Please select a different course.")
+                    continue 
 
                 # Check department match
                 if course.Department != student_department:
@@ -339,6 +365,10 @@ def select_courses(request):
                                     f"Current points: {student_points}, "
                                     f"Attempted to assign: {points_assigned}"
                                 )
+                                continue
+                            
+                            if course.grad_Capacity >0:
+                                messages.error(request,f"{course.name} still has {course.grad_Capacity} slots open, try to enroll instead")
                                 continue
 
                             new_enrollment = Enrollment.objects.create(

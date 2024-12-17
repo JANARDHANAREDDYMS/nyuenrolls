@@ -136,9 +136,6 @@
         <a href="{% url 'userprofile:logout' %}" style="float: right;">Logout</a>
     </header>
 
-    <div class="container">
-        <a href="{% url 'courseEnroll:dashboard' %}" class="button">Go Back</a>
-        
         <div class="filter-section">
             <form method="get" action="{% url 'courseEnroll:search_courses' %}">
                 <label for="school">Filter by School:</label>
@@ -147,6 +144,16 @@
                     {% for school in schools %}
                         <option value="{{ school.id }}" {% if school.id == selected_school %}selected{% endif %}>
                             {{ school.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+        
+                <label for="department">Filter by Department:</label>
+                <select id="department" name="department" onchange="this.form.submit()">
+                    <option value="">All Departments</option>
+                    {% for department in departments %}
+                        <option value="{{ department.id }}" {% if department.id == selected_department %}selected{% endif %}>
+                            {{ department.name }}
                         </option>
                     {% endfor %}
                 </select>
@@ -184,6 +191,7 @@
                         <p><strong>Day:</strong> {{ course.class_days }}</p>
                         <p><strong>Class Time:</strong> {{ course.start_time }} - {{ course.end_time }}</p>
                         <p><strong>Capacity:</strong> {{ course.grad_Capacity }}</p>
+                        <p><strong>Section:</strong> {{ course.section }}</p>
                         <p><strong>School:</strong> {{ course.school }}</p>
                         
                         {% if action == 'waitlist' or course.grad_Capacity <= 0 %}
