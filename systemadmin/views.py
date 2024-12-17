@@ -285,3 +285,134 @@ def delete_course(request, course_id):
         except Exception as e:
             return JsonResponse({'error': f'Error deleting course: {str(e)}'}, status=400)
     return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+def search_course_enrollment(request):
+    enrolled_students = []  # Initialize empty lists for context
+    waitlisted_students = []
+    course = None
+
+    if request.method == 'POST':
+        course_id = request.POST.get('searchCourseName')  # Get course_id from the form input
+        print("Course Search")
+        print(course_id)
+
+        # Validate that the course exists
+        try:
+            course = CourseInfo.objects.get(course_id=course_id)  # Fetch course info if it exists
+        except CourseInfo.DoesNotExist:
+            return render(request, 'systemadmin/search_course_enrollment.html', {
+                'error': f"Course with ID {course_id} does not exist.",
+                'enrolled_students': enrolled_students,
+                'waitlisted_students': waitlisted_students
+            })
+
+        # Query the Enrollment table for enrolled and waitlisted students
+        enrolled_students = Enrollment.objects.filter(course=course, is_waitlisted=False)
+        waitlisted_students = Enrollment.objects.filter(course=course, is_waitlisted=True)
+
+        # Print debug information for enrolled and waitlisted students
+        print("Enrolled Students:", enrolled_students)
+        print("Waitlisted Students:", waitlisted_students)
+
+    # Render the template with the results
+    return render(request, 'systemadmin/search_course_enrollment.html', {
+        'course': course,
+        'enrolled_students': enrolled_students,
+        'waitlisted_students': waitlisted_students
+    })
+
+def search_student_enrollment(request):
+    enrolled_courses = []  # Initialize empty lists for context
+    waitlisted_courses = []
+    student = None  # Initialize student as None
+
+    if request.method == 'POST':
+        student_id = request.POST.get('searchStudentID')  # Get student_id from the form input
+        print("Student Search")
+        print(student_id)
+
+        # Validate that the student exists
+        try:
+            student = StudentInfo.objects.get(N_id=student_id)  # Fetch the student object
+        except StudentInfo.DoesNotExist:
+            return HttpResponse("Student Not Found")
+
+        # Query the Enrollment table for the student's enrolled and waitlisted courses
+        enrolled_courses = Enrollment.objects.filter(student=student, is_waitlisted=False).select_related('course')
+        waitlisted_courses = Enrollment.objects.filter(student=student, is_waitlisted=True).select_related('course')
+
+        # Debug output
+        print("Enrolled Courses:", [enrollment.course.name for enrollment in enrolled_courses])
+        print("Waitlisted Courses:", [enrollment.course.name for enrollment in waitlisted_courses])
+
+    # Render the template with the student and courses
+    return render(request, 'systemadmin/search_student_enrollment.html', {
+        'student': student,  # Pass the student object
+        'enrolled_courses': enrolled_courses,
+        'waitlisted_courses': waitlisted_courses
+    })
+
+def remove_student_course(request):
+    if request.method == 'POST':
+        student_id = request.POST.get('student_id')
+        course_id = request.POST.get('course_id')
+
+        print("Course ID:", course_id)
+        print("Student ID:", student_id)
+
+        # Validate that both the student and course exist
+        student = get_object_or_404(StudentInfo, N_id=student_id)
+        course = get_object_or_404(CourseInfo, course_id=course_id)
+
+        # Find and delete the enrollment record
+        enrollment = Enrollment.objects.filter(student=student, course=course).first()
+        if enrollment:
+            enrollment.delete()
+            print(f"Removed student {student_id} from course {course_id}")
+        else:
+            return HttpResponse("Enrollment record not found.")
+
+        # Re-fetch the enrolled and waitlisted courses for the student
+        enrolled_courses = Enrollment.objects.filter(student=student, is_waitlisted=False).select_related('course')
+        waitlisted_courses = Enrollment.objects.filter(student=student, is_waitlisted=True).select_related('course')
+
+        # Redirect to the same page with updated student info and courses
+        return render(request, 'systemadmin/search_student_enrollment.html', {
+            'student': student,  # Pass the student object
+            'enrolled_courses': enrolled_courses,
+            'waitlisted_courses': waitlisted_courses
+        })
+
+    return HttpResponse("Invalid request.")
+
+def remove_student_fromcourse(request):
+    if request.method == 'POST':
+        student_id = request.POST.get('student_id')
+        course_id = request.POST.get('course_id')
+
+        print("Course ID:", course_id)
+        print("Student ID:", student_id)
+
+        # Validate that both the student and course exist
+        student = get_object_or_404(StudentInfo, N_id=student_id)
+        course = get_object_or_404(CourseInfo, course_id=course_id)
+
+        # Find and delete the enrollment record
+        enrollment = Enrollment.objects.filter(student=student, course=course).first()
+        if enrollment:
+            enrollment.delete()
+            print(f"Removed student {student_id} from course {course_id}")
+        else:
+            return HttpResponse("Enrollment record not found.")
+
+        enrolled_students = Enrollment.objects.filter(course=course, is_waitlisted=False)
+        waitlisted_students = Enrollment.objects.filter(course=course, is_waitlisted=True)
+
+        # Redirect to the same page with updated student info and courses
+        return render(request, 'systemadmin/search_course_enrollment.html', {
+            'course': course,
+            'enrolled_students': enrolled_students,
+            'waitlisted_students': waitlisted_students
+        })
+
+    return HttpResponse("Invalid request.")

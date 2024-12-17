@@ -273,7 +273,7 @@
 
     <div class="dashboard-container">
         <div class="dashboard-option" onclick="openModal()">Manage Courses</div>
-        <div class="dashboard-option">Manage Student Enrollment</div>
+        <div class="dashboard-option" onclick="openEnrollment()">Manage Student Enrollment</div>
         <div class="dashboard-option" id="manage-override">Manage Override Forms</div>
         <div class="dashboard-option" id="manage-prereg">See Preregistration Data</div>
     </div>
@@ -290,6 +290,44 @@
         </div>
     </div>
 
+    <div id="enrollmentModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeEnrollmentModal()">&times;</span>
+            <h2>Manage Enrollment</h2>
+            <div class="modal-option" onclick="showCourseForm()">Search by Course</div>
+            <div class="modal-option" onclick="showStudentCourseForm()">Search by Student</div>
+        </div>
+    </div>
+    
+    <div id="addCourseEnrollmentModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeShowCourseForm()">&times;</span>
+            <form id="courseEnrollment" method="POST" action="{% url 'systemadmin:search_course_enrollment' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="searchCourseName">Course Name:</label>
+                    <input type="text" id="searchCourseName" name="searchCourseName" placeholder="Course Name" required>
+                </div>
+                <button class="add-button" type="submit">Search Enrollment</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="addStudentCourseEnrollmentModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeShowStudentCourseForm()">&times;</span>
+            <form id="studentEnrollment" method="POST" action="{% url 'systemadmin:search_student_enrollment' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="searchStudentID">Student ID:</label>
+                    <input type="text" id="searchStudentID" name="searchStudentID" placeholder="Student ID" required>
+                </div>
+                <button class="add-button" type="submit">Search Enrollment</button>
+            </form>
+        </div>
+    </div>
+
+    
     <!-- Add Course Form Modal -->
     <div id="addCourseModal" class="modal">
         <div class="modal-content">
@@ -542,15 +580,41 @@
             document.getElementById('courseModal').style.display = 'block';
         }
 
+        function openEnrollment() {
+            document.getElementById('enrollmentModal').style.display = 'block';
+        }
+
         // Close the Manage Courses modal
         function closeModal() {
             document.getElementById('courseModal').style.display = 'none';
+        }
+
+        function closeEnrollmentModal() {
+            document.getElementById('enrollmentModal').style.display = 'none';
         }
 
         // Open the Add Course form
         function showAddCourseForm() {
             closeModal();
             document.getElementById('addCourseModal').style.display = 'block';
+        }
+
+        function showCourseForm() {
+            closeEnrollmentModal();
+            document.getElementById('addCourseEnrollmentModal').style.display = 'block';
+        }
+
+        function showStudentCourseForm() {
+            closeEnrollmentModal();
+            document.getElementById('addStudentCourseEnrollmentModal').style.display = 'block';
+        }
+
+        function closeShowStudentCourseForm() {
+            document.getElementById('addStudentCourseEnrollmentModal').style.display = 'none';
+        }
+
+        function closeShowCourseForm() {
+            document.getElementById('addCourseEnrollmentModal').style.display = 'none';
         }
 
         // Close the Add Course modal
