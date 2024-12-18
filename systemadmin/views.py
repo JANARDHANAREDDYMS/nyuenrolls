@@ -16,7 +16,7 @@ import os
 
 
 email_address = "alper.mumcular@ug.bilkent.edu.tr"
-email_password = "Enroll@123"
+email_password = "Enrolls@123"
 
 smtp_server = "asmtp.bilkent.edu.tr"
 smtp_port = 587  # STARTTLS Port
@@ -89,7 +89,7 @@ def modify_override(request):
         <html>
         <body>
         <p>Your override request for <strong>{course.name}</strong> has been <strong>{status.lower()}</strong>.</p>
-        <p>To see your current courses, click <a href='http://127.0.0.1:8000/userprofile/login/'>here</a>.</p>
+        <p>To see your current courses, click <a href='http://13.58.80.217:80/userprofile/login/'>here</a>.</p>
         </body>
         </html>
         """
@@ -141,7 +141,7 @@ def modify_override(request):
                     <html>
                     <body>
                     <p>Congratulations! You have been successfully enrolled in <strong>{course.name}</strong>.</p>
-                    <p>To see your current courses, click <a href='http://127.0.0.1:8000/userprofile/login/'>here</a>.</p>
+                    <p>To see your current courses, click <a href='http://13.58.80.217:80/userprofile/login/'>here</a>.</p>
                     </body>
                     </html>
                     """
