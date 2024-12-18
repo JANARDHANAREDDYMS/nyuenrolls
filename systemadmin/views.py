@@ -3,7 +3,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from userprofile.models import DepartmentInfo,FacultyInfo,StudentInfo
 from django.http import HttpResponse,JsonResponse
-from courseEnroll.models import CourseInfo, OverrideForm,PreRegInfo, Enrollment
+from courseEnroll.models import CourseInfo, OverrideForm,PreRegInfo
 from datetime import date,datetime
 from django.contrib import messages
 from courseEnroll.forms import OverrideFormSubmission
@@ -11,17 +11,14 @@ from django.db.models import Q
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from dotenv import load_dotenv
 import os
 
-load_dotenv()
-
-email_address = os.getenv('EMAIL')
-email_password = os.getenv('PASSWORD')
+email_address = "alper.mumcular@ug.bilkent.edu.tr"
+email_password = "Enroll@123"
 
 smtp_server = "asmtp.bilkent.edu.tr"
 smtp_port = 587  # STARTTLS Port
-
+print(os.getenv("DEBUG"))
 
 def admin_required(user):
     return user.is_superuser
@@ -32,7 +29,7 @@ def admin_required(user):
 def admin_dashboard(request):
     departments = DepartmentInfo.objects.all()
     courses = CourseInfo.objects.all()
-    
+
     return render(request, 'systemadmin/admin_dashboard.html', {'departments': departments, 'courses': courses})
 
 @login_required
@@ -51,7 +48,7 @@ def prereg(request):
         ).count()
 
         prereg_data[course.course_id]["request"] = course_count
-    
+
     return render(request, 'systemadmin/preregistration.html', {'prereg_data': prereg_data})
 
 @login_required
@@ -60,7 +57,7 @@ def prereg(request):
 def override(request):
     # Query all override form submissions
     override_forms = OverrideForm.objects.all()
-    
+
     # Pass the data to the template
     return render(request, 'systemadmin/override.html', {'override_forms': override_forms})
 
@@ -72,33 +69,23 @@ def modify_override(request):
 
         # Fetch the specific override form based on formId
         override_form = get_object_or_404(OverrideForm, form_id=formId)
-        
-        # Add a print statement to debug the course information
-        print(f"Course Code: {override_form.course_code}")
-        print(f"Course Code Type: {type(override_form.course_code)}")
 
-        # Verify the course exists before proceeding
-        try:
-            course = CourseInfo.objects.get(course_id=override_form.course_code.course_id)
-        except CourseInfo.DoesNotExist:
-            messages.error(request, f"Course {override_form.course_code} not found.")
-            return redirect('systemadmin:override')
-
-        recipient_email = override_form.student.user.email or "am14533@nyu.edu"  # Fallback email
+        recipient_email = "am14533@nyu.edu"  # Replace with the recipient's email
         subject = "Override Form Status Update"
         body = f"""
-        <html>
-        <body>
-        <p>Your override request for <strong>{course.name}</strong> has been <strong>{status.lower()}</strong>.</p>
-        <p>To see your current courses, click <a href='http://127.0.0.1:8000/userprofile/login/'>here</a>.</p>
-        </body>
-        </html>
-        """
+                <html>
+                    <body>
+                        <p>Your override request for <strong>{override_form.course_code}</strong> has been <strong>{status.lower()}</strong>.</p>
+                        <p>To see your current courses, click <a href='http://127.0.0.1:8000/userprofile/login/'>here</a>.</p>
+                    </body>
+                </html>
+                """
+
         message = MIMEMultipart()
         message["From"] = "NYU Enrolls <alper.mumcular@ug.bilkent.edu.tr>"  # Custom "From" name
         message["To"] = recipient_email
         message["Subject"] = subject
-        message.attach(MIMEText(body, "html"))
+        message.attach(MIMEText(body, "html"))  # Use "html" instead of "plain"
 
         try:
             # Connect to the SMTP server
@@ -109,65 +96,20 @@ def modify_override(request):
                 server.login(email_address, email_password)
                 # Send the email
                 server.sendmail(email_address, recipient_email, message.as_string())
-            print("Email sent successfully!")
+                print("Email sent successfully!")
         except Exception as e:
-            print(f"Failed to send email: {e}")
+            print(f"Failed to send email: {e}")
 
         # Update the status of the form
         override_form.status = status
         override_form.save()
 
-        # If the status is 'Approved', add the student to the course if not already enrolled
-        if status.lower() == 'approved':
-            student = override_form.student
-            
-           
-    
-            if course.course_id == "CSGY6033D" or "CSGY6003" or "CSGY6003B" or "CSGY6003C":
-                # Check if the graduate capacity is zero
-                if course.grad_Capacity == 0:
-                    # Increase the graduate capacity by 1
-                    course.grad_Capacity += 1
-                    course.save()
-
-                # Check if the student is already enrolled
-                if not Enrollment.objects.filter(student=student, course=course).exists():
-                    # Enroll the student in the course
-                    Enrollment.objects.create(student=student, course=course, is_waitlisted=False)
-                    student.course_enrolled.add(course)
-
-                    # Optionally, notify the student that they have been enrolled
-                    notification_subject = "Course Enrollment Successful"
-                    notification_body = f"""
-                    <html>
-                    <body>
-                    <p>Congratulations! You have been successfully enrolled in <strong>{course.name}</strong>.</p>
-                    <p>To see your current courses, click <a href='http://127.0.0.1:8000/userprofile/login/'>here</a>.</p>
-                    </body>
-                    </html>
-                    """
-                    notification_message = MIMEMultipart()
-                    notification_message["From"] = "NYU Enrolls <alper.mumcular@ug.bilkent.edu.tr>"
-                    notification_message["To"] = recipient_email
-                    notification_message["Subject"] = notification_subject
-                    notification_message.attach(MIMEText(notification_body, "html"))
-
-                    try:
-                        # Connect to the SMTP server and send notification email
-                        with smtplib.SMTP(smtp_server, smtp_port) as server:
-                            server.starttls()
-                            server.login(email_address, email_password)
-                            server.sendmail(email_address, recipient_email, notification_message.as_string())
-                        print("Enrollment notification sent successfully!")
-                    except Exception as e:
-                        print(f"Failed to send enrollment notification email: {e}")
-
-        return redirect('systemadmin:override')
+    return redirect('systemadmin:override')
 
 
 def logout_request(request):
     logout(request)
-    return redirect('userprofile:login') 
+    return redirect('userprofile:login')
 
 def course_add(request):
     if request.method == 'POST':
@@ -230,7 +172,7 @@ def course_update(request):
             # Update course fields
             course.name = request.POST.get('courseName')
             course.Department = get_object_or_404(DepartmentInfo, department_id=request.POST.get('department'))
-            
+
             # Get the instructor name from the form
             instructor_name = request.POST.get('instructor')
 
@@ -253,7 +195,7 @@ def course_update(request):
             course.points_assigned = int(request.POST.get('pointsAssigned', 0))
             course.credits = float(request.POST.get('credits', 0))
             course.waitlist_capacity = int(request.POST.get('waitlistCapacity', 0))
-            
+
             # Save updated course
             course.save()
 
@@ -269,7 +211,7 @@ def get_course_details(request, course_id):
     if request.method == 'GET':
         # Fetch the course from the database
         course = get_object_or_404(CourseInfo, course_id=course_id)
-        
+
         # Return the course details as JSON
         return JsonResponse({
             'course_id': course.course_id,
@@ -295,142 +237,11 @@ def delete_course(request, course_id):
         try:
             # Fetch the course using course_id
             course = get_object_or_404(CourseInfo, course_id=course_id)
-            
+
             # Delete the course
             course.delete()
-            
+
             return JsonResponse({'message': 'Course deleted successfully!'}, status=200)
         except Exception as e:
             return JsonResponse({'error': f'Error deleting course: {str(e)}'}, status=400)
     return JsonResponse({'error': 'Invalid request method'}, status=400)
-
-def search_course_enrollment(request):
-    enrolled_students = []  # Initialize empty lists for context
-    waitlisted_students = []
-    course = None
-
-    if request.method == 'POST':
-        course_id = request.POST.get('searchCourseName')  # Get course_id from the form input
-        print("Course Search")
-        print(course_id)
-
-        # Validate that the course exists
-        try:
-            course = CourseInfo.objects.get(course_id=course_id)  # Fetch course info if it exists
-        except CourseInfo.DoesNotExist:
-            return render(request, 'systemadmin/search_course_enrollment.html', {
-                'error': f"Course with ID {course_id} does not exist.",
-                'enrolled_students': enrolled_students,
-                'waitlisted_students': waitlisted_students
-            })
-
-        # Query the Enrollment table for enrolled and waitlisted students
-        enrolled_students = Enrollment.objects.filter(course=course, is_waitlisted=False)
-        waitlisted_students = Enrollment.objects.filter(course=course, is_waitlisted=True)
-
-        # Print debug information for enrolled and waitlisted students
-        print("Enrolled Students:", enrolled_students)
-        print("Waitlisted Students:", waitlisted_students)
-
-    # Render the template with the results
-    return render(request, 'systemadmin/search_course_enrollment.html', {
-        'course': course,
-        'enrolled_students': enrolled_students,
-        'waitlisted_students': waitlisted_students
-    })
-
-def search_student_enrollment(request):
-    enrolled_courses = []  # Initialize empty lists for context
-    waitlisted_courses = []
-    student = None  # Initialize student as None
-
-    if request.method == 'POST':
-        student_id = request.POST.get('searchStudentID')  # Get student_id from the form input
-        print("Student Search")
-        print(student_id)
-
-        # Validate that the student exists
-        try:
-            student = StudentInfo.objects.get(N_id=student_id)  # Fetch the student object
-        except StudentInfo.DoesNotExist:
-            return HttpResponse("Student Not Found")
-
-        # Query the Enrollment table for the student's enrolled and waitlisted courses
-        enrolled_courses = Enrollment.objects.filter(student=student, is_waitlisted=False).select_related('course')
-        waitlisted_courses = Enrollment.objects.filter(student=student, is_waitlisted=True).select_related('course')
-
-        # Debug output
-        print("Enrolled Courses:", [enrollment.course.name for enrollment in enrolled_courses])
-        print("Waitlisted Courses:", [enrollment.course.name for enrollment in waitlisted_courses])
-
-    # Render the template with the student and courses
-    return render(request, 'systemadmin/search_student_enrollment.html', {
-        'student': student,  # Pass the student object
-        'enrolled_courses': enrolled_courses,
-        'waitlisted_courses': waitlisted_courses
-    })
-
-def remove_student_course(request):
-    if request.method == 'POST':
-        student_id = request.POST.get('student_id')
-        course_id = request.POST.get('course_id')
-
-        print("Course ID:", course_id)
-        print("Student ID:", student_id)
-
-        # Validate that both the student and course exist
-        student = get_object_or_404(StudentInfo, N_id=student_id)
-        course = get_object_or_404(CourseInfo, course_id=course_id)
-
-        # Find and delete the enrollment record
-        enrollment = Enrollment.objects.filter(student=student, course=course).first()
-        if enrollment:
-            enrollment.delete()
-            print(f"Removed student {student_id} from course {course_id}")
-        else:
-            return HttpResponse("Enrollment record not found.")
-
-        # Re-fetch the enrolled and waitlisted courses for the student
-        enrolled_courses = Enrollment.objects.filter(student=student, is_waitlisted=False).select_related('course')
-        waitlisted_courses = Enrollment.objects.filter(student=student, is_waitlisted=True).select_related('course')
-
-        # Redirect to the same page with updated student info and courses
-        return render(request, 'systemadmin/search_student_enrollment.html', {
-            'student': student,  # Pass the student object
-            'enrolled_courses': enrolled_courses,
-            'waitlisted_courses': waitlisted_courses
-        })
-
-    return HttpResponse("Invalid request.")
-
-def remove_student_fromcourse(request):
-    if request.method == 'POST':
-        student_id = request.POST.get('student_id')
-        course_id = request.POST.get('course_id')
-
-        print("Course ID:", course_id)
-        print("Student ID:", student_id)
-
-        # Validate that both the student and course exist
-        student = get_object_or_404(StudentInfo, N_id=student_id)
-        course = get_object_or_404(CourseInfo, course_id=course_id)
-
-        # Find and delete the enrollment record
-        enrollment = Enrollment.objects.filter(student=student, course=course).first()
-        if enrollment:
-            enrollment.delete()
-            print(f"Removed student {student_id} from course {course_id}")
-        else:
-            return HttpResponse("Enrollment record not found.")
-
-        enrolled_students = Enrollment.objects.filter(course=course, is_waitlisted=False)
-        waitlisted_students = Enrollment.objects.filter(course=course, is_waitlisted=True)
-
-        # Redirect to the same page with updated student info and courses
-        return render(request, 'systemadmin/search_course_enrollment.html', {
-            'course': course,
-            'enrolled_students': enrolled_students,
-            'waitlisted_students': waitlisted_students
-        })
-
-    return HttpResponse("Invalid request.")

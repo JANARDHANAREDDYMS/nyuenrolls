@@ -2,3 +2,4 @@ Django>=4.0
 psycopg2-binary==2.9.10
 secure-smtplib==0.1.1
 python-dotenv==1.0.1
+django-cors-headers
