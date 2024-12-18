@@ -417,11 +417,12 @@
             <p><strong>Position:</strong> {{ item.course.position }} out of {{ item.course.total_waitlist }}</p>
             <p><strong>Points Assigned:</strong> {{ item.points_assigned }}</p>
             <p><strong>True Points:</strong> {{ item.true_points }}</p>
+            <p><strong>Day:</strong> {{ item.course.class_days }}</p>
             <p><strong>Class Time:</strong> {{ item.course.start_time }} - {{ item.course.end_time }}</p>
         </li>
     {% endfor %}
 {% else %}
-    <li>You are not waitlisted in any courses.</li>
+    <li>You are not waitlisted in any courses.</lix>
 {% endif %}
         </ul>
         <form method="post" action="{% url 'courseEnroll:delete_selected_courses' %}">

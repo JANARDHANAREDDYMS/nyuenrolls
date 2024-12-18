@@ -93,6 +93,7 @@ def dashboard(request):
                         'Instructor': {
                             'name': str(enrollment.course.Instructor.Name)
                         },
+                        'class_days': str(enrollment.course.class_days),
                         'start_time': str(enrollment.course.start_time),
                         'end_time': str(enrollment.course.end_time),
                         'position': position,
