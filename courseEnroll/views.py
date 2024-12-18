@@ -139,9 +139,9 @@ def swap_courses(request):
         if not enrolled_course_id or not waitlisted_course_id:
             messages.error(request, "Please select both courses to swap.")
             return redirect('courseEnroll:dashboard')
-
+        
         student_info = request.user.studentinfo
-
+        
         try:
             with transaction.atomic():
                 # Get both enrollments
@@ -155,19 +155,21 @@ def swap_courses(request):
                     course__course_id=waitlisted_course_id,
                     is_waitlisted=True
                 )
-
+                
                 # Store course references before deletion
                 enrolled_course = enrolled.course
                 waitlisted_course = waitlisted.course
-                points_to_refund = waitlisted.points_assigned or 0
-
+                
+                # Convert points to a consistent type (float)
+                points_to_refund = float(waitlisted.points_assigned or 0)
+                
                 # Remove enrolled course from both models
                 student_info.course_enrolled.remove(enrolled_course)
                 enrolled.delete()
-
+                
                 # Delete waitlist enrollment
                 waitlisted.delete()
-
+                
                 # Create new enrollment and add to course_enrolled
                 new_enrollment = Enrollment.objects.create(
                     student=student_info,
@@ -176,30 +178,30 @@ def swap_courses(request):
                     points_assigned=0
                 )
                 student_info.course_enrolled.add(waitlisted_course)
-
+                
                 # Update student info
-                student_info.points = student_info.points + points_to_refund
+                # Convert student_info.points to float if it's a Decimal
+                student_points = float(student_info.points)
+                student_info.points = student_points + points_to_refund
                 
                 # Update course capacities
                 if student_info.Education_Level == "Graduate":
                     waitlisted_course.grad_Capacity -= 1
                 else:
                     waitlisted_course.phd_course_capacity -= 1
-
+                
                 # Save changes
                 waitlisted_course.save()
                 student_info.save()
-
+                
                 messages.success(request, f"Successfully swapped {enrolled_course.name} with {waitlisted_course.name}")
-
+        
         except Enrollment.DoesNotExist:
             messages.error(request, "One or both selected courses were not found.")
         except Exception as e:
             messages.error(request, f"Error swapping courses: {str(e)}")
-
-    return redirect('courseEnroll:dashboard')
-
-
+        
+        return redirect('courseEnroll:dashboard')
 
 @login_required
 def search_courses(request):
