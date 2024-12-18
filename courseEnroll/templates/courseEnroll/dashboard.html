@@ -170,6 +170,18 @@
     margin-bottom: 10px;
 }
 
+.action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        .action-buttons .swap-container {
+            margin-top: 0;
+        }
+
+
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
@@ -209,11 +221,10 @@
         <a href="{% url 'userprofile:scheduler' %}">Course Scheduler</a>
         <a href="{% url 'userprofile:logout' %}" style="float: right;">Logout</a>
     </header>
-
-    <div class="container">
-        <div class="welcome-section">
-            <h1>Welcome, {{ student_info.Name }}</h1>
-        </div>
+    <div class="welcome-section">
+        <h1>Welcome, {{ student_info.Name }}</h1>
+    </div>
+    <div class="container">  
 
         {% if messages %}
         <script type="text/JavaScript">
@@ -242,14 +253,16 @@
             {% endif %}
         </ul>
 
-    <form method="post" action="{% url 'courseEnroll:search_courses' %}">
+     <form method="post" action="{% url 'courseEnroll:search_courses' %}">
         {% csrf_token %}
         <input type="hidden" name="action" id="formAction" value="enroll">
         <input type="search" name="search_courses" placeholder="Enter Course ID" required>
         <button type="submit" class="button" onclick="setAction('enroll')">Enroll into more courses</button>
-    </form>
-
-    <div style="display: flex; justify-content: space-between; align-items: start; margin-top: 20px;">
+     </form>
+     </div>
+    <div class="container">
+    <div class="action-buttons">
+   <!-- <div style="display: flex; justify-content: space-between; align-items: start; margin-top: 20px;"> -->
         <form method="post" action="{% url 'courseEnroll:delete_selected_courses' %}" style="flex: 1;">
             {% csrf_token %}
             <div class="swap-option">
@@ -266,8 +279,8 @@
             </div>
         </form>
     
-    <div id="course-swap-root" style="margin-right: 60px; margin-top: 90px; flex:2">
-        
+    <!--<div id="course-swap-root" style="margin-right: 60px; margin-top: 90px; flex:2">-->
+        <div id="course-swap-root" style="flex: 2;">
                 <script type="text/babel">
                 const CourseSwapComponent = () => {
                     const [showPanel, setShowPanel] = React.useState(false);
@@ -395,7 +408,8 @@
     </div>
 </div>
 
-       
+    </div>
+    <div class="container">
 
         <h2>Waitlisted Courses</h2>
         <h3>Remaining Points {{ points_left }}</h3>
