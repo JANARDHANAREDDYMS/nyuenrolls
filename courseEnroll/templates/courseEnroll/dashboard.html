@@ -169,7 +169,16 @@
     border-radius: 4px;
     margin-bottom: 10px;
 }
+.action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: flex-start;
+            align-items: center;
+        }
 
+        .action-buttons .swap-container {
+            margin-top: 0;
+        }
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
@@ -209,12 +218,10 @@
         <a href="{% url 'userprofile:scheduler' %}">Course Scheduler</a>
         <a href="{% url 'userprofile:logout' %}" style="float: right;">Logout</a>
     </header>
-
+    <div class="welcome-section">
+        <h1>Welcome, {{ student_info.Name }}</h1>
+    </div>
     <div class="container">
-        <div class="welcome-section">
-            <h1>Welcome, {{ student_info.Name }}</h1>
-        </div>
-
         {% if messages %}
         <script type="text/JavaScript">
             {% for message in messages %}
@@ -248,9 +255,10 @@
         <input type="search" name="search_courses" placeholder="Enter Course ID" required>
         <button type="submit" class="button" onclick="setAction('enroll')">Enroll into more courses</button>
     </form>
-
-    <div style="display: flex; justify-content: space-between; align-items: start; margin-top: 20px;">
-        <form method="post" action="{% url 'courseEnroll:delete_selected_courses' %}" style="flex: 1;">
+    </div>
+    <div class="container">
+        <div class="action-buttons" style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <form method="post" action="{% url 'courseEnroll:delete_selected_courses' %}"  style="flex: 1; margin-right: 275px;">
             {% csrf_token %}
             <div class="swap-option">
                 <label>Select Course to Delete:</label>
@@ -262,11 +270,11 @@
                         </option>
                     {% endfor %}
                 </select>
-                <button type="submit" class="button delete-button">Delete Selected Course</button>
             </div>
+                <button type="submit" class="button delete-button">Delete Selected Course</button>
         </form>
     
-    <div id="course-swap-root" style="margin-right: 60px; margin-top: 90px; flex:2">
+    <div id="course-swap-root" style="flex:1;">
         
                 <script type="text/babel">
                 const CourseSwapComponent = () => {
@@ -323,11 +331,11 @@
                                     >
                                         {showPanel ? 'Hide Swap Panel' : 'Show Swap Panel'}
                                     </button>
-                                </div>
+                                
                             </div>
 
                             {showPanel && (
-                                <div className="swap-container">
+                                
                                     <div className="swap-options">
                                         <div className="swap-option">
                                             <label>Select Enrolled Course:</label>
@@ -371,8 +379,9 @@
                                             </button>
                                         </div>
                                     </div>
-                                </div>
+                                
                             )}
+                        </div>
                         </React.Fragment>
                     );
                 };
@@ -395,8 +404,8 @@
     </div>
 </div>
 
-       
-
+    </div> 
+    <div class="container">
         <h2>Waitlisted Courses</h2>
         <h3>Remaining Points {{ points_left }}</h3>
         <form method="post" action="{% url 'courseEnroll:search_courses' %}">
