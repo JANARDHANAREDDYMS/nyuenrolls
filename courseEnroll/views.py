@@ -160,6 +160,16 @@ def swap_courses(request):
                 enrolled_course = enrolled.course
                 waitlisted_course = waitlisted.course
                 
+                # Check course capacity based on student's education level
+                if student_info.Education_Level == "Graduate":
+                    if waitlisted_course.grad_Capacity <= 0:
+                        messages.error(request, f"Cannot swap: {waitlisted_course.name} has no available graduate seats.")
+                        return redirect('courseEnroll:dashboard')
+                else:
+                    if waitlisted_course.phd_course_capacity <= 0:
+                        messages.error(request, f"Cannot swap: {waitlisted_course.name} has no available PhD seats.")
+                        return redirect('courseEnroll:dashboard')
+                
                 # Convert points to a consistent type (float)
                 points_to_refund = float(waitlisted.points_assigned or 0)
                 
@@ -202,10 +212,27 @@ def swap_courses(request):
             messages.error(request, f"Error swapping courses: {str(e)}")
         
         return redirect('courseEnroll:dashboard')
+    
+    
 
 @login_required
 def search_courses(request):
     if request.method == 'POST':
+        student_info = StudentInfo.objects.get(user=request.user)
+        
+        # Calculate remaining points using the same method as in dashboard
+        total_waitlist_points = float(sum(
+            float(enrollment.points_assigned or 0)
+            for enrollment in student_info.enrollments.filter(is_waitlisted=True)
+        ))
+        
+        # Calculate remaining points
+        remaining_points = 100 - total_waitlist_points
+        
+        # Debug print
+        print(f"Total Waitlisted Points: {total_waitlist_points}")
+        print(f"Calculated Remaining Points: {remaining_points}")
+        
         search_courses = request.POST.get('search_courses', '')
         school_id = request.POST.get('school', '')
         department_id = request.POST.get('department', '')
@@ -213,15 +240,13 @@ def search_courses(request):
 
         courses = CourseInfo.objects.all()
 
-        # Filter by school
+        # Existing filtering logic...
         if school_id:
             courses = courses.filter(school__id=school_id)
 
-        # Filter by department
         if department_id:
             courses = courses.filter(Department__id=department_id)
 
-        # Filter by search query
         courses = CourseInfo.objects.filter(
             Q(course_id__icontains=search_courses) |
             Q(name__icontains=search_courses) | 
@@ -239,11 +264,14 @@ def search_courses(request):
             'departments': departments,
             'selected_school': school_id,
             'selected_department': department_id,
-            'student_info': request.user.studentinfo,
+            'student_info': student_info,
+            'remaining_points': remaining_points,  # Add this to context
         })
     else:
         return render(request, 'courseEnroll/course_search.html', {})
     
+
+
 
 @login_required
 def select_courses(request):
@@ -251,8 +279,28 @@ def select_courses(request):
 
     if request.method == 'POST':
         student_info = StudentInfo.objects.get(user=request.user)
+        
+        # Debug: Print initial student points
+        print(f"Initial Student Points: {student_info.points}")
+        
+        # Calculate waitlisted points
+        waitlist_enrollments = student_info.enrollments.filter(is_waitlisted=True)
+        total_waitlist_points = sum(
+            float(enrollment.points_assigned or 0)
+            for enrollment in waitlist_enrollments
+        )
+        
+        # Debug: Print waitlist points
+        print(f"Total Waitlist Points: {total_waitlist_points}")
+        print(f"Waitlisted Courses: {list(waitlist_enrollments.values_list('course__name', 'points_assigned'))}")
+        
+        # Calculate remaining points
+        remaining_points = 100 - total_waitlist_points
+        
+        # Debug: Print remaining points
+        print(f"Calculated Remaining Points: {remaining_points}")
+
         student_school = student_info.School
-        student_points = student_info.points
         student_department = student_info.department
         selected_courses = request.POST.getlist('selected_courses')
         edu_level = student_info.Education_Level
@@ -306,7 +354,6 @@ def select_courses(request):
                 ).first()
 
                 if action == 'enroll':
-                    # Check if already enrolled
                     if Enrollment.objects.filter(student=student_info, course=course, is_waitlisted=False).exists():
                         messages.warning(request, f"You are already enrolled in {course.name}.")
                         continue
@@ -322,7 +369,6 @@ def select_courses(request):
                         waitlisted_enrollment.save()
                         student_info.course_enrolled.add(course)
 
-
                         # Refund points if any were assigned
                         if waitlisted_enrollment.points_assigned:
                             student_info.points += waitlisted_enrollment.points_assigned
@@ -331,8 +377,6 @@ def select_courses(request):
                         # Direct enrollment
                         Enrollment.objects.create(student=student_info, course=course, is_waitlisted=False)
                         student_info.course_enrolled.add(course)
-
-
 
                     # Update course capacity
                     if edu_level == "Graduate":
@@ -349,31 +393,35 @@ def select_courses(request):
                     messages.success(request, f"Successfully enrolled in {course.name}.")
 
                 elif action == 'waitlist':
+                    # Validate points before waitlisting
                     if not waitlisted_enrollment:
                         points_assigned = request.POST.get(f'points_{course_id}', 0)
                         try:
-                            print(f"Current student points: {student_info.points}")
-                            print(f"Points attempting to assign: {points_assigned}")
-                            print(f"Calculation check: 100 - {student_info.points} = {100 -int(points_assigned)}")
-
                             points_assigned = int(points_assigned)
                             
+                            # Debug: Print points being assigned
+                            print(f"Points Attempting to Assign: {points_assigned}")
+                            print(f"Remaining Points Before Assignment: {remaining_points}")
+                            
+                            # Point validation checks
                             if points_assigned < 0:
                                 messages.error(request, f"Points cannot be negative for {course.name}")
                                 continue
                             
-                            if points_assigned > student_points:
+                            if points_assigned > remaining_points:
                                 messages.error(request,
                                     f"Not enough points available for {course.name}. "
-                                    f"Current points: {student_points}, "
+                                    f"Current points: {remaining_points}, "
                                     f"Attempted to assign: {points_assigned}"
                                 )
                                 continue
                             
-                            if course.grad_Capacity >0:
-                                messages.error(request,f"{course.name} still has {course.grad_Capacity} slots open, try to enroll instead")
+                            # Check if course still has capacity for direct enrollment
+                            if course.grad_Capacity > 0:
+                                messages.error(request, f"{course.name} still has {course.grad_Capacity} slots open, try to enroll instead")
                                 continue
 
+                            # Create waitlist enrollment
                             new_enrollment = Enrollment.objects.create(
                                 student=student_info, 
                                 course=course, 
@@ -381,19 +429,18 @@ def select_courses(request):
                                 points_assigned=points_assigned
                             )
 
+                            # Calculate true points based on target date
                             days_difference = max(0, (new_enrollment.created_at - target_date).days)
                             true_points = max(0, points_assigned - (days_difference * 1.6))
                             
                             new_enrollment.true_points = true_points
                             new_enrollment.save()
 
-                            student_info.points -= points_assigned
-                            student_info.save()
-
                             messages.success(request, 
                                 f"Successfully waitlisted for {course.name} with {points_assigned} points. "
                                 f"True points for position: {true_points}"
                             )
+                        
                         except ValueError:
                             messages.error(request, f"Invalid points value for {course.name}.")
                             continue

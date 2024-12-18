@@ -136,39 +136,17 @@
         <a href="{% url 'userprofile:logout' %}" style="float: right;">Logout</a>
     </header>
 
-        <div class="filter-section">
-            <form method="get" action="{% url 'courseEnroll:search_courses' %}">
-                <label for="school">Filter by School:</label>
-                <select id="school" name="school" onchange="this.form.submit()">
-                    <option value="">All Schools</option>
-                    {% for school in schools %}
-                        <option value="{{ school.id }}" {% if school.id == selected_school %}selected{% endif %}>
-                            {{ school.name }}
-                        </option>
-                    {% endfor %}
-                </select>
         
-                <label for="department">Filter by Department:</label>
-                <select id="department" name="department" onchange="this.form.submit()">
-                    <option value="">All Departments</option>
-                    {% for department in departments %}
-                        <option value="{{ department.id }}" {% if department.id == selected_department %}selected{% endif %}>
-                            {{ department.name }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </form>
-        </div>
-
+    <div class="container">
         {% if search_courses %}
             <h2>Search Results for "{{ search_courses }}"</h2>
             <h2>Matched Courses</h2>
             <p><strong>Action:</strong> {{ action }}</p>
             
             {% if action == 'waitlist' %}
-                <div class="points-info">
-                    <p><strong>Your Available Points:</strong> {{ student_info.points }}</p>
-                </div>
+                            <div class="points-info">
+                                <p><strong>Your Available Points:</strong> {{ remaining_points }}</p>
+                            </div>
             {% endif %}
 
             <form method="post" action="{% url 'courseEnroll:select_courses' %}">
@@ -194,21 +172,23 @@
                         <p><strong>Section:</strong> {{ course.section }}</p>
                         <p><strong>School:</strong> {{ course.school }}</p>
                         
+                        
+
                         {% if action == 'waitlist' or course.grad_Capacity <= 0 %}
                             <div class="points-section">
                                 <label>
                                     Points to Assign:
                                     <input type="number" 
-                                           name="points_{{ course.course_id }}" 
-                                           value="0"
-                                           min="0"
-                                           max="{{ student_info.points }}"
-                                           required
-                                           class="form-control"
-                                           oninput="validatePoints(this, {{ student_info.points }})">
+                                        name="points_{{ course.course_id }}" 
+                                        value="0"
+                                        min="0"
+                                        max="{{ remaining_points }}"
+                                        required
+                                        class="form-control"
+                                        oninput="validatePoints(this, {{ remaining_points }})">
                                 </label>
                                 <span class="points-feedback">
-                                    Points cannot exceed available points ({{ student_info.points }})
+                                    Points cannot exceed available points ({{ remaining_points }})
                                 </span>
                             </div>
                         {% endif %}
@@ -250,5 +230,7 @@
             }
         }
     </script>
+    </div>
+        
 </body>
 </html>
