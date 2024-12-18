@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-i95&1+(gw+nmot2s^ir)6)qjv8prou&w=45)a%y7m&60_znf_+'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -39,19 +39,17 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'userprofile',
     'courseEnroll',
-    'systemadmin',
-    'corsheaders',
+    'systemadmin'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware', 
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -117,10 +115,11 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'http://13.58.80.217'
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
 ]
 
-#ALLOWED_HOSTS = ['localhost', '127.0.0.1','74.101.114.159, 0.0.0.0']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '74.101.114.159', '3.137.179.130']   #adding ec2 public ip for django to accept requests
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
@@ -138,15 +137,13 @@ USE_TZ = True
 # In project/settings.py
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'courseEnroll/static/courseEnroll'),
-    os.path.join(BASE_DIR, 'userprofile/static/userprofile'),
+    os.path.join(BASE_DIR, 'courseEnroll/static'),
 ]
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
-LOGIN_URL = 'userprofile/login/'
 
 
 # Default primary key field type
