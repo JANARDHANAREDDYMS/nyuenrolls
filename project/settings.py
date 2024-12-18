@@ -138,7 +138,8 @@ USE_TZ = True
 # In project/settings.py
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'courseEnroll/static'),
+    os.path.join(BASE_DIR, 'courseEnroll/static/courseEnroll'),
+    os.path.join(BASE_DIR, 'userprofile/static/userprofile'),
 ]
 
 STATIC_URL = '/static/'

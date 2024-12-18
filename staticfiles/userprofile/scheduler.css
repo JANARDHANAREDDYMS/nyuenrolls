@@ -1,0 +1,119 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    padding: 10px 20px;
+    color: white;
+}
+
+.navbar h2 {
+    margin-left: 10px;
+}
+
+.nav-right a {
+    color: white;
+    text-decoration: none;
+    margin-left: 15px;
+}
+
+.nav-right a:hover {
+    text-decoration: underline;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+.sidebar {
+    width: 30%;
+    background-color: #f4f4f4;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.scheduler {
+    width: 70%;
+    overflow: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+
+thead {
+    background-color: #007bff;
+    color: white;
+}
+
+.hidden {
+    display: none;
+}
+
+.course-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.course-entry button {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+}
+
+.course-block {
+    background-color: #21de83;
+    color: black;
+    padding: 5px;
+    border-radius: 5px;
+}
+.time-conflict {
+    background-color: #ff4444; 
+    color: white;
+    padding: 5px;
+    border-radius: 5px;
+    margin: 2px 0;
+}
+#course-selector > div {
+    margin-bottom: 10px;
+}
+
+button {
+    margin-top: 10px;
+}
+
+.scheduler {
+    margin-top: 20px;
+    margin-right: 60px;
+}
+
+.scheduler table {
+    width: 100%;
+    margin: auto;
+    border-collapse: collapse;
+}
+
+.scheduler th, 
+.scheduler td {
+    padding: 10px;
+    border: 1px solid #ccc;
+}
