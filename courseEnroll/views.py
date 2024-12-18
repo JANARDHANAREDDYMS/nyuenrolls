@@ -13,7 +13,6 @@ import json  # Add this import
 from django.core.serializers.json import DjangoJSONEncoder  # Add this too if not already present
 from datetime import datetime
 
-
 @login_required
 def dashboard(request):
     try:
@@ -27,6 +26,28 @@ def dashboard(request):
         student_department = student_info.department
         max_points = 100
         max_credits = 12
+
+        # Handle PreRegInfo Form Submission
+        if request.method == 'POST':
+            prereg_form = PreRegInfoForm(request.POST, user=request.user)
+            if prereg_form.is_valid():
+                # Check if pre-registration already exists
+                existing_prereg = PreRegInfo.objects.filter(student_id=student_info).first()
+                
+                if existing_prereg:
+                    messages.warning(request, "You have already submitted a pre-registration form.")
+                else:
+                    # Save the pre-registration form
+                    prereg_instance = prereg_form.save(commit=False)
+                    prereg_instance.student_id = student_info
+                    prereg_instance.save()
+                    
+                    messages.success(request, "Pre-registration submitted successfully!")
+                
+                return redirect('courseEnroll:dashboard')
+            else:
+                # If form is not valid, print errors (for debugging)
+                print(prereg_form.errors)
 
         # Calculate total credits and points
         total_enrolled_credits = float(sum(
@@ -53,7 +74,7 @@ def dashboard(request):
                     'name': str(enrollment.course.name),
                     'credits': float(enrollment.course.credits),
                     'description': str(enrollment.course.description),
-                    'class_days':str(enrollment.course.class_days),
+                    'class_days': str(enrollment.course.class_days),
                     'Instructor': {
                         'Name': str(enrollment.course.Instructor.Name)
                     },
@@ -64,7 +85,6 @@ def dashboard(request):
             }
             for enrollment in all_enrollments if not enrollment.is_waitlisted
         ]
-        print(student_department)
 
         waitlist_courses = []
         for enrollment in all_enrollments:
@@ -124,13 +144,15 @@ def dashboard(request):
         }
 
         return render(request, 'courseEnroll/dashboard.html', context)
+    
     except Exception as e:
         print(f"Error in dashboard: {str(e)}")
         # Return a response even if there's an error
         return render(request, 'courseEnroll/dashboard.html', {
             'error': f"An error occurred: {str(e)}"
         })
-
+    
+    
 @login_required
 def swap_courses(request):
     if request.method == 'POST':
@@ -611,3 +633,33 @@ def submit_override(request):
 
 from .models import CourseInfo, Enrollment
 
+@login_required
+def submit_prereg(request):
+    if request.method == 'POST':
+        try:
+            student_info = StudentInfo.objects.get(user=request.user)
+            
+            existing_prereg = PreRegInfo.objects.filter(student_id=student_info).first()
+            
+            if existing_prereg:
+                messages.warning(request, "You have already submitted a pre-registration form.")
+                return redirect('courseEnroll:dashboard')
+            
+            prereg_form = PreRegInfoForm(request.POST, user=request.user)
+            
+            if prereg_form.is_valid():
+                prereg_instance = prereg_form.save(commit=False)
+                prereg_instance.student_id = student_info
+                prereg_instance.save()
+                
+                messages.success(request, "Pre-registration submitted successfully!")
+            else:
+                for field, errors in prereg_form.errors.items():
+                    messages.error(request, f"{field}: {', '.join(errors)}")
+        
+        except StudentInfo.DoesNotExist:
+            messages.error(request, "Student profile not found.")
+        except Exception as e:
+            messages.error(request, f"An error occurred: {str(e)}")
+    
+    return redirect('courseEnroll:dashboard')

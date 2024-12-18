@@ -117,9 +117,8 @@ class PreRegInfoForm(forms.ModelForm):
         fields = ['course1', 'course2', 'course3']
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)  # Extract the user from kwargs
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-
         if user:
             try:
                 student = StudentInfo.objects.get(user=user)
@@ -132,3 +131,21 @@ class PreRegInfoForm(forms.ModelForm):
                 self.fields['course1'].queryset = CourseInfo.objects.none()
                 self.fields['course2'].queryset = CourseInfo.objects.none()
                 self.fields['course3'].queryset = CourseInfo.objects.none()
+
+    def clean(self):
+        cleaned_data = super().clean()
+        course1 = cleaned_data.get('course1')
+        course2 = cleaned_data.get('course2')
+        course3 = cleaned_data.get('course3')
+
+        # Ensure no duplicate courses are selected
+        if course1 and course2 and course1 == course2:
+            raise forms.ValidationError("First and second course choices cannot be the same.")
+        
+        if course1 and course3 and course1 == course3:
+            raise forms.ValidationError("First and third course choices cannot be the same.")
+        
+        if course2 and course3 and course2 == course3:
+            raise forms.ValidationError("Second and third course choices cannot be the same.")
+
+        return cleaned_data

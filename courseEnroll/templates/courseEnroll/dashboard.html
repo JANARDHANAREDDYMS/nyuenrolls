@@ -483,15 +483,31 @@
         {% else %}
             <form method="POST">
                 {% csrf_token %}
-                {{ prereg_form.as_p }}
-                <button type="submit" name="prereg_form" class="button">Submit Pre-Registration Form</button>
+                <div class="form-group">
+                    <label>First Choice Course</label>
+                    {{ prereg_form.course1 }}
+                </div>
+                <div class="form-group">
+                    <label>Second Choice Course</label>
+                    {{ prereg_form.course2 }}
+                </div>
+                <div class="form-group">
+                    <label>Third Choice Course</label>
+                    {{ prereg_form.course3 }}
+                </div>
+                <button type="submit" class="button">Submit Pre-Registration Form</button>
             </form>
+    
             {% if prereg_form.errors %}
-                <ul class="error-list">
+                <div class="error-messages">
                     {% for field, errors in prereg_form.errors.items %}
-                        <li>{{ field }}: {{ errors|join:", " }}</li>
+                        <p class="error">{{ field }}: 
+                            {% for error in errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </p>
                     {% endfor %}
-                </ul>
+                </div>
             {% endif %}
         {% endif %}
     </div>
