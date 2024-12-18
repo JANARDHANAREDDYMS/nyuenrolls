@@ -261,24 +261,25 @@
      </form>
      </div>
     <div class="container">
+        <div class="action-buttons" style="position: relative; padding-right: 200px;">
+            <form method="post" action="{% url 'courseEnroll:delete_selected_courses' %}">
+                {% csrf_token %}
+                <div class="swap-option">
+                    <label>Select Course to Delete:</label>
+                    <select name="selected_courses" class="swap-select" multiple style="width: 100%;">
+                        <option value="">Select a course to delete...</option>
+                        {% for item in enrolled_courses %}
+                            <option value="{{ item.course.course_id }}">
+                                {{ item.course.name }} ({{ item.course.course_id }}) - {{ item.course.credits }} credits
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="button delete-button" style="position: absolute; right: 0; top: 0;">Delete Selected Course</button>
+            </form>
+        </div>
+                        
     <div class="action-buttons">
-   <!-- <div style="display: flex; justify-content: space-between; align-items: start; margin-top: 20px;"> -->
-        <form method="post" action="{% url 'courseEnroll:delete_selected_courses' %}" style="flex: 1;">
-            {% csrf_token %}
-            <div class="swap-option">
-                <label>Select Course to Delete:</label>
-                <select name="selected_courses" class="swap-select" multiple>
-                    <option value="">Select a course to delete...</option>
-                    {% for item in enrolled_courses %}
-                        <option value="{{ item.course.course_id }}">
-                            {{ item.course.name }} ({{ item.course.course_id }}) - {{ item.course.credits }} credits
-                        </option>
-                    {% endfor %}
-                </select>
-                <button type="submit" class="button delete-button">Delete Selected Course</button>
-            </div>
-        </form>
-    
     <!--<div id="course-swap-root" style="margin-right: 60px; margin-top: 90px; flex:2">-->
         <div id="course-swap-root" style="flex: 2;">
                 <script type="text/babel">
@@ -405,8 +406,9 @@
             });
        
             </script>  
-    </div>
-</div>
+          </div> <!--course swap ending here-->
+
+        </div>
 
     </div>
     <div class="container">
