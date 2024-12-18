@@ -271,18 +271,41 @@ def search_courses(request):
     else:
         return render(request, 'courseEnroll/course_search.html', {})
     
-
-
-
 @login_required
 def select_courses(request):
     target_date = timezone.make_aware(datetime(2024, 12, 12, 0, 0, 0))
 
+    def check_time_conflict(student_info, new_course):
+        
+        enrolled_courses = Enrollment.objects.filter(
+            student=student_info, 
+            is_waitlisted=False
+        )
+
+        conflicts = []
+        for enrollment in enrolled_courses:
+            existing_course = enrollment.course
+
+            if existing_course.class_days == new_course.class_days:
+                existing_start = existing_course.start_time
+                existing_end = existing_course.end_time
+                new_start = new_course.start_time
+                new_end = new_course.end_time
+
+                if not (new_end <= existing_start or new_start >= existing_end):
+                    conflicts.append({
+                        'existing_course': existing_course.name,
+                        'existing_time': f"{existing_course.start_time} - {existing_course.end_time}",
+                        'existing_day': existing_course.class_days,
+                        'new_course': new_course.name,
+                        'new_time': f"{new_course.start_time} - {new_course.end_time}",
+                        'new_day': new_course.class_days
+                    })
+
+        return conflicts
+
     if request.method == 'POST':
         student_info = StudentInfo.objects.get(user=request.user)
-        
-        # Debug: Print initial student points
-        print(f"Initial Student Points: {student_info.points}")
         
         # Calculate waitlisted points
         waitlist_enrollments = student_info.enrollments.filter(is_waitlisted=True)
@@ -291,15 +314,8 @@ def select_courses(request):
             for enrollment in waitlist_enrollments
         )
         
-        # Debug: Print waitlist points
-        print(f"Total Waitlist Points: {total_waitlist_points}")
-        print(f"Waitlisted Courses: {list(waitlist_enrollments.values_list('course__name', 'points_assigned'))}")
-        
         # Calculate remaining points
         remaining_points = 100 - total_waitlist_points
-        
-        # Debug: Print remaining points
-        print(f"Calculated Remaining Points: {remaining_points}")
 
         student_school = student_info.School
         student_department = student_info.department
@@ -355,6 +371,13 @@ def select_courses(request):
                 ).first()
 
                 if action == 'enroll':
+                    # Check for time conflicts before enrollment
+                    time_conflicts = check_time_conflict(student_info, course)
+                    
+                    if time_conflicts:
+                        messages.error(request, f"Cannot enroll into this {course.name}, its has time conflicts with your existing courses")
+                        continue
+
                     if Enrollment.objects.filter(student=student_info, course=course, is_waitlisted=False).exists():
                         messages.warning(request, f"You are already enrolled in {course.name}.")
                         continue
@@ -399,10 +422,6 @@ def select_courses(request):
                         points_assigned = request.POST.get(f'points_{course_id}', 0)
                         try:
                             points_assigned = int(points_assigned)
-                            
-                            # Debug: Print points being assigned
-                            print(f"Points Attempting to Assign: {points_assigned}")
-                            print(f"Remaining Points Before Assignment: {remaining_points}")
                             
                             # Point validation checks
                             if points_assigned < 0:
