@@ -446,7 +446,7 @@
         <div class="form-section" id="override-form" style="display: none;">
             <h2>Override Form Request</h2>
             <h3>Submit a New Override Request</h3>
-            <form method="POST">
+            <form method="POST" action="{% url 'courseEnroll:submit_override' %}">
                 {% csrf_token %}
                 {{ override_form.as_p }}
                 <button type="submit" name="override_form">Submit Override Form</button>
@@ -472,7 +472,7 @@
             {% else %}
                 <p class="empty-state">No previous override requests found.</p>
             {% endif %}
-        </div>    
+        </div>
     </div>
 
     <div class="container">

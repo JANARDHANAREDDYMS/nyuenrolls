@@ -4,32 +4,49 @@ from userprofile.models import StudentInfo,DepartmentInfo
 from django.utils import timezone
 
 
+from django import forms
+from .models import CourseInfo, OverrideForm
+from userprofile.models import StudentInfo, DepartmentInfo
+
 class OverrideFormSubmission(forms.ModelForm):
+    course_code = forms.ModelChoiceField(
+        queryset=CourseInfo.objects.none(),  # Initially empty
+        empty_label="Select a Course",
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
     class Meta:
         model = OverrideForm
         fields = ['course_code', 'explanation']
         widgets = {
             'explanation': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Provide a detailed explanation...'}),
         }
-    
+
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)  # Extract the user from kwargs
         super().__init__(*args, **kwargs)
-
+        
         if user:
             try:
                 student = StudentInfo.objects.get(user=user)
-                student_department = student.department
-                # Exclude courses from the student's department
-                self.fields['course_code'].queryset = CourseInfo.objects.exclude(Department=student_department)
+                
+                # Filter courses not in student's department
+                courses_outside_department = CourseInfo.objects.all()
+                
+                # Set the queryset for course_code field
+                self.fields['course_code'].queryset = courses_outside_department
+                
+                # Store the student for the save method
+                self.student = student
             except StudentInfo.DoesNotExist:
-                self.fields['course_code'].queryset = CourseInfo.objects.none()  # No courses available
-    
+                self.student = None
+                self.fields['course_code'].queryset = CourseInfo.objects.none()
+
     def save(self, commit=True):
         instance = super().save(commit=False)
-        # Automatically set the department of the selected course
-        if instance.course_code:
-            instance.department = instance.course_code.Department
+        instance.student = self.student
+        instance.department = instance.course_code.Department
         if commit:
             instance.save()
         return instance

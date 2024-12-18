@@ -64,6 +64,7 @@ def dashboard(request):
             }
             for enrollment in all_enrollments if not enrollment.is_waitlisted
         ]
+        print(student_department)
 
         waitlist_courses = []
         for enrollment in all_enrollments:
@@ -523,8 +524,21 @@ def verify_course_enrollment_consistency():
     print("\n=====================================")
     return mismatches
 
-def submit_override_form(request):
-    pass
+@login_required
+def submit_override(request):
+    if request.method == 'POST':
+        override_form = OverrideFormSubmission(request.POST, user=request.user)
+        if override_form.is_valid():
+            override_form.save()
+            # Add any additional logic here, such as sending a notification email
+            return redirect('courseEnroll:dashboard')
+    else:
+        override_form = OverrideFormSubmission(user=request.user)
+
+    return render(request, 'courseEnroll/dashboard.html', {
+        'override_form': override_form,
+        # Other context variables
+    })
 
 from .models import CourseInfo, Enrollment
 
