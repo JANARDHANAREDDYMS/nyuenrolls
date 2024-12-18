@@ -11,13 +11,12 @@ from django.db.models import Q
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from dotenv import load_dotenv
 import os
 
-load_dotenv()
 
-email_address = os.getenv('EMAIL')
-email_password = os.getenv('PASSWORD')
+
+email_address = "alper.mumcular@ug.bilkent.edu.tr"
+email_password = "Enroll@123"
 
 smtp_server = "asmtp.bilkent.edu.tr"
 smtp_port = 587  # STARTTLS Port

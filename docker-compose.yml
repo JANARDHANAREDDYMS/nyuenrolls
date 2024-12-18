@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  web:
+    image: your-image-name
+    build:
+      context: .
+    ports:
+      - "80:8000"
+    volumes:
+      - .:/code
+    command: python manage.py runserver 0.0.0.0:8000
+    environment:
+      - DEBUG=False
+      - DJANGO_SETTINGS_MODULE=project.settings
