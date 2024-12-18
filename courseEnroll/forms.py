@@ -31,11 +31,18 @@ class OverrideFormSubmission(forms.ModelForm):
             try:
                 student = StudentInfo.objects.get(user=user)
                 
-                # Filter courses not in student's department
-                courses_outside_department = CourseInfo.objects.all()
+                courses_outside_department = CourseInfo.objects.exclude(Department=student.department)
+            
+            # Get specific courses
+                specific_courses = CourseInfo.objects.filter(
+                    course_id__in=["CSGY6033D", "CSGY6033", "CSGY6033B", "CSGY6033C"]
+                )
                 
-                # Set the queryset for course_code field
-                self.fields['course_code'].queryset = courses_outside_department
+                # Combine the querysets
+                courses_for_override = courses_outside_department | specific_courses
+                
+                self.fields['course_code'].queryset = courses_for_override
+
                 
                 # Store the student for the save method
                 self.student = student
