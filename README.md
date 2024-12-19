@@ -13,55 +13,47 @@ NYU Enrolls is a modern course enrollment application designed to address the ch
 ## Features
 
 ### MVP (Minimum Viable Product)
-- **Course Add/Drop/Swap**: Allows students to easily manage their course registrations.
-- **Override Forms**: Enables students to request enrollment in restricted or full courses.
-- **User Authentication**: Secure login for students, faculty, and admins.
+- **User Authentication ✅
+- **Course Add/Drop/Swap ✅
+- **Category-based Seat Allocation ✅
+- **Accurate Course Availability Display ✅
+- **Override Forms ✅
+- **Admin Privileges ✅
+- **Waitlist System ✅
+- **Pre-registration System ✅
 
 ### MLP (Minimum Lovable Product)
-- **Pre-Registration System**: Students can pre-register for courses before the official registration period.
-- **Guaranteed Course Enrollment**: Implements a fair system to ensure students get essential courses.
-- **Accurate Course Availability**: Displays real-time seat availability with category-based allocation.
-- **Category-Based Seat Allocation**: Allocates seats based on student categories (e.g., Master’s, PhD).
-- **Modern User Interface**: Provides a seamless, user-friendly experience.
-- **Capacity Alert Notifications**: Notifies students of seat availability in real-time.
-
+- **Saved Section/Courses ❌
+- **Detailed Analytics & Reports ❌
+- **Modern UI ✅
+- **Capacity Alert Notification ❌
+- **Real-time Course Enrollment ✅
+  
 ### Nice-to-Have Features
-- **Detailed Analytics & Reports**: Insights into enrollment trends for administrators.
-- **Course Recommendation Engine**: Suggests courses based on student preferences and history.
-- **Mobile Application Version**: On-the-go access for students.
+- **AI Integrated Course Recommendation ❌
+- **Course Scheduler ✅
+- **Mobile Application Version ❌
 
 ---
 
 ## Team Members
 
-| Name             | Role               |
-|------------------|--------------------|
-| Alper Mumcular   | Product Owner      |
-| [Team Member 1]  | Developer          |
-| [Team Member 2]  | Developer          |
-| [Team Member 3]  | UI/UX Designer     |
-| [Team Member 4]  | QA Engineer        |
+| Name             |
+|------------------|
+| Alper Mumcular   |
+| Janardhan Reddy  |
+| Shreya Srinivasan Bharadwaj |
+| Shreyansh Bhardwaj  |
+| Sourik Dutta  |
 
 ---
 
 ## Technology Stack
 
-- **Frontend**: React.js
-- **Backend**: Django/Flask (Python)
+- **Frontend**: HTML + CSS + JS
+- **Backend**: Django (Python)
 - **Database**: PostgreSQL
-- **Authentication**: OAuth 2.0
 - **DevOps**: Docker, GitHub Actions
-
----
-
-## Prerequisites
-
-To run the project, ensure the following are installed:
-
-- Python 3.8 or higher
-- Node.js and npm
-- PostgreSQL
-- Docker (for containerized setup)
 
 ---
 
@@ -73,92 +65,15 @@ To run the project, ensure the following are installed:
    cd nyu-enrolls
    ```
 
-2. Backend Setup:
+2. Install dependencies and run:
    ```bash
-   cd backend
-   python -m venv env
-   source env/bin/activate # On Windows: .\env\Scripts\activate
    pip install -r requirements.txt
-   python manage.py migrate
    python manage.py runserver
    ```
 
-3. Frontend Setup:
-   ```bash
-   cd frontend
-   npm install
-   npm start
-   ```
-
-4. Access the application:
-   - Backend: `http://127.0.0.1:8000/`
-   - Frontend: `http://localhost:3000/`
-
----
-
-## Development Workflow
-
-- **Version Control**: Git is used for versioning. Follow the branch naming convention: `feature/<name>` or `bugfix/<name>`.
-- **Code Review**: All pull requests require review by at least one team member.
-- **Issue Tracking**: Use GitHub Issues to track bugs, enhancements, and feature requests.
-
-### Running Tests
-
-1. Backend tests:
-   ```bash
-   python manage.py test
-   ```
-
-2. Frontend tests:
-   ```bash
-   npm test
-   ```
-
----
-
-## Deployment
-
-### Using Docker
-
-1. Build and run containers:
-   ```bash
-   docker-compose up --build
-   ```
-
-2. Access the application:
-   ```
-   http://localhost:8000/  # Backend
-   http://localhost:3000/  # Frontend
-   ```
-
----
-
-## Contribution Guidelines
-
-We welcome contributions! To contribute:
-
-1. Fork the repository.
-2. Create a feature branch:
-   ```bash
-   git checkout -b feature/<your-feature-name>
-   ```
-3. Commit your changes:
-   ```bash
-   git commit -m "Add your message here"
-   ```
-4. Push to your fork and submit a pull request.
-
----
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
-
----
-
 ## Contact
 
-For questions or suggestions, please reach out to [your email/contact info].
+For questions or suggestions, please send an email to am14533@nyu.edu.
 
 ---
 
