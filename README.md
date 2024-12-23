@@ -1,8 +1,6 @@
 # NYU Enrolls
 
-NYU Enrolls is a modern course enrollment application designed to address the challenges faced by NYU students, faculty, and administrators. It streamlines the registration process, ensures accurate course availability, and provides an intuitive user experience.
 
-## Project Overview
 
 **Goal**: Simplify and enhance the course enrollment experience at NYU by addressing pain points such as inaccurate course availability, limited waitlist visibility, and lack of real-time notifications.
 
