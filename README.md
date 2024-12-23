@@ -1,6 +1,14 @@
 # NYU Enrolls
 
+<<<<<<< main
+NYU Enrolls is a modern course enrollment application designed to address the challenges faced by NYU students, faculty, and administrators. It streamlines the registration process, ensures accurate course availability, and provides an intuitive user experience.
 
+## Project Overview
+=======
+This is enhanced version existing NYU Course Enrollment Application "Albert". We have implemented a priority-based waitlisting system and fixed other bugs that are present.
+
+A few things to understand, a student has 100 points that he can divide among waitlisted courses, and using a combination of points and the day waitlisting was done, the rank of a student of waitlisting is done. Enrollment into full classes is open to students in the waitlist in this order.
+>>>>>>> main
 
 **Goal**: Simplify and enhance the course enrollment experience at NYU by addressing pain points such as inaccurate course availability, limited waitlist visibility, and lack of real-time notifications.
 
