@@ -19,26 +19,26 @@ A few things to understand, a student has 100 points that he can divide among wa
 ## Features
 
 ### MVP (Minimum Viable Product)
-- **User Authentication ✅
-- **Course Add/Drop/Swap ✅
-- **Category-based Seat Allocation ✅
-- **Accurate Course Availability Display ✅
-- **Override Forms ✅
-- **Admin Privileges ✅
-- **Waitlist System ✅
-- **Pre-registration System ✅
+- **User Authentication 
+- **Course Add/Drop/Swap 
+- **Category-based Seat Allocation 
+- **Accurate Course Availability Display 
+- **Override Forms 
+- **Admin Privileges 
+- **Waitlist System 
+- **Pre-registration System 
 
 ### MLP (Minimum Lovable Product)
-- **Saved Section/Courses ❌
-- **Detailed Analytics & Reports ❌
-- **Modern UI ✅
-- **Capacity Alert Notification ❌
-- **Real-time Course Enrollment ✅
+- **Saved Section/Courses 
+- **Detailed Analytics & Reports 
+- **Modern UI 
+- **Capacity Alert Notification 
+- **Real-time Course Enrollment 
   
 ### Nice-to-Have Features
-- **AI Integrated Course Recommendation ❌
-- **Course Scheduler ✅
-- **Mobile Application Version ❌
+- **AI Integrated Course Recommendation 
+- **Course Scheduler 
+- **Mobile Application Version 
 
 ---
 
@@ -83,4 +83,4 @@ For questions or suggestions, please send an email to am14533@nyu.edu.
 
 ---
 
-We hope NYU Enrolls transforms the course registration process into a seamless experience for everyone at NYU! 🚀
+We hope NYU Enrolls transforms the course registration process into a seamless experience for everyone at NYU! 
